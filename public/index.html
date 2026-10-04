@@ -1146,67 +1146,62 @@ function handleDownloadClick(format) {
 
 function downloadCVPdf() {
   showToast('⏳ Génération du PDF…');
-  const cvHtml = document.getElementById('cvPreview').innerHTML;
 
-  // Créer un conteneur temporaire avec styles explicites (zéro CSS variable)
-  // Même approche que downloadCVDoc() qui fonctionne parfaitement
-  const wrapper = document.createElement('div');
-  wrapper.id = 'pdfTempContainer';
-  wrapper.style.cssText = 'position:fixed;left:0;top:0;width:190mm;background:#ffffff;z-index:-9999;opacity:0;pointer-events:none;';
-  wrapper.innerHTML = `
-    <div id="pdfTempContent" style="font-family:Inter,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.6;color:#0F172A;background:#ffffff;padding:20px;">
-      <style>
-        #pdfTempContent * { box-sizing: border-box; }
-        #pdfTempContent h2 { font-size:15pt; font-weight:800; letter-spacing:-0.02em; border-bottom:2px solid #2563EB; padding-bottom:6px; margin-bottom:12px; color:#0F172A; }
-        #pdfTempContent h3 { font-size:11pt; font-weight:700; color:#2563EB; margin:14px 0 4px; }
-        #pdfTempContent p { color:#475569; margin-bottom:6px; font-size:10pt; }
-        #pdfTempContent .cv-contact { display:flex; gap:12px; font-size:9pt; color:#94A3B8; flex-wrap:wrap; margin-bottom:14px; }
-        #pdfTempContent .cv-contact span { color:#94A3B8; font-size:9pt; }
-        #pdfTempContent .cv-section { margin-bottom:16px; }
-        #pdfTempContent .cv-section-title { font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #E2E8F0; }
-        #pdfTempContent .job { margin-bottom:10px; }
-        #pdfTempContent .job-title { font-weight:700; font-size:10pt; color:#0F172A; }
-        #pdfTempContent .job-meta { font-size:9pt; color:#94A3B8; margin-bottom:4px; }
-        #pdfTempContent ul { padding-left:16px; }
-        #pdfTempContent li { font-size:9pt; color:#475569; margin-bottom:3px; }
-      </style>
-      ${cvHtml}
-    </div>
-  `;
-  document.body.appendChild(wrapper);
+  // Récupérer le HTML brut et remplacer TOUTES les CSS variables par des couleurs hex
+  var cvHtml = document.getElementById('cvPreview').innerHTML;
+  cvHtml = cvHtml
+    .split('var(--ink-muted)').join('#475569')
+    .split('var(--ink-faint)').join('#94A3B8')
+    .split('var(--ink)').join('#0F172A')
+    .split('var(--blue-light)').join('#EFF6FF')
+    .split('var(--blue-dark)').join('#1D4ED8')
+    .split('var(--blue)').join('#2563EB')
+    .split('var(--border)').join('#E2E8F0')
+    .split('var(--green)').join('#16A34A')
+    .split('var(--orange)').join('#EA580C')
+    .split('var(--red)').join('#DC2626');
 
-  // Remplacer les couleurs CSS variables inline (ex: style="color:var(--blue)")
-  const tempContent = document.getElementById('pdfTempContent');
-  const allEls = tempContent.querySelectorAll('*');
-  const varMap = {
-    'var(--ink)':'#0F172A','var(--ink-muted)':'#475569','var(--ink-faint)':'#94A3B8',
-    'var(--blue)':'#2563EB','var(--border)':'#E2E8F0','var(--green)':'#16A34A',
-    'var(--orange)':'#EA580C','var(--red)':'#DC2626','var(--blue-light)':'#EFF6FF',
-    'var(--blue-dark)':'#1D4ED8'
-  };
-  for (let i = 0; i < allEls.length; i++) {
-    const el = allEls[i];
-    if (el.style.cssText) {
-      let css = el.style.cssText;
-      for (const [v, hex] of Object.entries(varMap)) {
-        css = css.split(v).join(hex);
-      }
-      el.style.cssText = css;
-    }
-  }
+  // Construire un document HTML complet autonome (polices système, zéro CSS variable)
+  var fullHtml = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.6;color:#0F172A;background:#ffffff;padding:10px;width:700px;">' +
+    '<style>' +
+    'h2{font-size:16pt!important;font-weight:800!important;letter-spacing:-0.02em;border-bottom:2px solid #2563EB!important;padding-bottom:6px!important;margin-bottom:12px!important;color:#0F172A!important;}' +
+    'h3{font-size:11pt!important;font-weight:700!important;color:#2563EB!important;margin:14px 0 4px!important;}' +
+    'p{color:#475569!important;margin-bottom:6px!important;font-size:10pt!important;}' +
+    '.cv-contact{display:flex;gap:12px;font-size:9pt!important;color:#94A3B8!important;flex-wrap:wrap;margin-bottom:14px!important;}' +
+    '.cv-contact span{color:#94A3B8!important;font-size:9pt!important;}' +
+    '.cv-section{margin-bottom:16px!important;}' +
+    '.cv-section-title{font-size:8pt!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:0.1em!important;color:#94A3B8!important;margin-bottom:8px!important;padding-bottom:4px!important;border-bottom:1px solid #E2E8F0!important;}' +
+    '.job{margin-bottom:10px!important;}' +
+    '.job-title{font-weight:700!important;font-size:10pt!important;color:#0F172A!important;}' +
+    '.job-meta{font-size:9pt!important;color:#94A3B8!important;margin-bottom:4px!important;}' +
+    'ul{padding-left:16px!important;}' +
+    'li{font-size:9pt!important;color:#475569!important;margin-bottom:3px!important;}' +
+    'div,span{color:inherit;}' +
+    '</style>' +
+    cvHtml +
+    '</div>';
 
-  const opt = {
+  // Créer un élément temporaire VISIBLE (pas opacity:0, pas off-screen)
+  var temp = document.createElement('div');
+  temp.style.cssText = 'position:absolute;left:0;top:0;width:700px;background:#ffffff;z-index:99999;';
+  temp.innerHTML = fullHtml;
+  document.body.appendChild(temp);
+  var target = temp.firstElementChild;
+
+  var opt = {
     margin:       [10, 10, 10, 10],
     filename:     'CV-optimise-ATS.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', allowTaint: true,
+                    windowWidth: 700 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(tempContent).save().then(function() {
-    document.body.removeChild(wrapper);
+  html2pdf().set(opt).from(target).save().then(function() {
+    document.body.removeChild(temp);
     showToast('✅ CV téléchargé en PDF !');
-  }).catch(function() {
-    if (document.getElementById('pdfTempContainer')) document.body.removeChild(wrapper);
+  }).catch(function(err) {
+    console.error('PDF error:', err);
+    try { document.body.removeChild(temp); } catch(e){}
     showToast('❌ Erreur lors de la génération du PDF');
   });
 }

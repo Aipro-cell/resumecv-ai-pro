@@ -394,6 +394,135 @@ footer a { color: rgba(255,255,255,.6); text-decoration: none; }
 .locked-overlay h3 { font-size: 1rem; font-weight: 700; }
 .locked-overlay p { font-size: .84rem; color: var(--ink-muted); text-align: center; max-width: 220px; }
 .locked-overlay button { background: var(--blue); color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: .88rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+/* SCORE ATS DÉTAILLÉ */
+.ats-detail-panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.ats-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.ats-score-big {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+.ats-score-big.green { background: linear-gradient(135deg, #22C55E, #16A34A); }
+.ats-score-big.orange { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.ats-score-big.red { background: linear-gradient(135deg, #EF4444, #DC2626); }
+.ats-detail-header h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+.ats-detail-header p {
+  font-size: .78rem;
+  color: var(--ink-muted);
+  margin: 2px 0 0;
+}
+.ats-categories {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ats-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+.ats-cat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ats-cat-name {
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.ats-cat-score {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.ats-cat-tag {
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+.ats-cat-tag.excellent { background: #DCFCE7; color: #16A34A; }
+.ats-cat-tag.bon { background: #DBEAFE; color: #2563EB; }
+.ats-cat-tag.moyen { background: #FEF3C7; color: #D97706; }
+.ats-cat-tag.faible { background: #FEE2E2; color: #DC2626; }
+
+/* SUGGESTIONS IA */
+.ats-suggestions {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.ats-suggestions h4 {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.suggestion-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg);
+  margin-bottom: 8px;
+}
+.suggestion-item:last-child { margin-bottom: 0; }
+.suggestion-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.suggestion-item strong {
+  display: block;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.suggestion-item p {
+  font-size: .78rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* PLAN BADGE USED */
+.plan-badge-used { background: #F1F5F9; color: var(--ink-faint); font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
 </style>
 </head>
 <body>
@@ -569,6 +698,25 @@ footer a { color: rgba(255,255,255,.6); text-decoration: none; }
             <span class="label">Score ATS</span>
             <span class="score-val" id="atsScore">—</span>
           </div>
+
+          <!-- SCORE DÉTAILLÉ -->
+          <div class="ats-detail-panel" id="atsDetailPanel" style="display:none;">
+            <div class="ats-detail-header">
+              <div class="ats-score-big green" id="atsScoreBig">—</div>
+              <div>
+                <h3>Score ATS détaillé</h3>
+                <p id="atsScoreVerdict">Votre CV est bien optimisé pour les systèmes ATS</p>
+              </div>
+            </div>
+            <div class="ats-categories" id="atsCategories"></div>
+          </div>
+
+          <!-- SUGGESTIONS IA -->
+          <div class="ats-suggestions" id="atsSuggestions" style="display:none;">
+            <h4>💡 Suggestions IA pour améliorer votre CV</h4>
+            <div id="suggestionsContent"></div>
+          </div>
+
           <div class="cv-preview" id="cvPreview"></div>
           <div id="keywordsSection" style="margin-top:12px;display:none;">
             <div style="font-size:.75rem;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Mots-clés ATS détectés</div>
@@ -973,6 +1121,8 @@ async function checkUserPlan(user, retryCount) {
       userPlan = 'monthly';
     } else if (data.plan === 'unit') {
       userPlan = 'unit';
+    } else if (data.plan === 'used') {
+      userPlan = 'free'; // Crédit unitaire déjà consommé
     } else {
       userPlan = 'free';
     }
@@ -1006,6 +1156,12 @@ function restoreSavedCV() {
       }
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('outputContent').classList.add('active');
+
+      // Réafficher les panneaux détaillés s'ils ont du contenu
+      var dp = document.getElementById('atsDetailPanel');
+      if (dp && dp.querySelector('#atsCategories').innerHTML) dp.style.display = 'block';
+      var sp = document.getElementById('atsSuggestions');
+      if (sp && sp.querySelector('#suggestionsContent').innerHTML) sp.style.display = 'block';
 
       // Déverrouiller si le paiement a été enregistré
       const outputEl = document.getElementById('outputContent');
@@ -1125,11 +1281,34 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
+// ── CONSOMMATION CRÉDIT UNITAIRE ──
+async function consumeUnitCredit() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const resp = await fetch('/.netlify/functions/use-unit-credit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token
+      }
+    });
+    const result = await resp.json();
+    if (result.success) {
+      userPlan = 'free'; // Crédit consommé, retour à free
+      updateNavUI(currentUser);
+      showToast('✅ CV téléchargé ! Votre crédit unitaire a été utilisé.');
+    }
+  } catch(e) {
+    console.error('Erreur consommation crédit:', e);
+  }
+}
+
 // Si abonné mensuel → télécharge directement sans payer
 // Si non abonné → ouvre le modal de paiement 2,99€
 let pendingFormat = 'pdf';
 
-function handleDownloadClick(format) {
+async function handleDownloadClick(format) {
   pendingFormat = format || 'pdf';
   if (currentUser && (userPlan === 'monthly' || userPlan === 'unit')) {
     // A payé (unit ou abonné) : téléchargement direct
@@ -1137,6 +1316,10 @@ function handleDownloadClick(format) {
       downloadCVDoc();
     } else {
       downloadCVPdf();
+    }
+    // Si paiement unitaire, consommer le crédit après le premier téléchargement
+    if (userPlan === 'unit') {
+      await consumeUnitCredit();
     }
   } else {
     // Non payé : modal paiement 2,99€
@@ -1427,6 +1610,60 @@ function renderCV(cv, name, targetJob, contact) {
   const scoreEl = document.getElementById('atsScore');
   const score = cv.atsScore || 82;
   scoreEl.style.color = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+
+  // ── SCORE ATS DÉTAILLÉ ──
+  const detailPanel = document.getElementById('atsDetailPanel');
+  if (cv.atsDetails && detailPanel) {
+    const scoreBig = document.getElementById('atsScoreBig');
+    scoreBig.textContent = score;
+    scoreBig.className = 'ats-score-big ' + (score >= 80 ? 'green' : score >= 60 ? 'orange' : 'red');
+
+    const verdict = document.getElementById('atsScoreVerdict');
+    if (score >= 80) verdict.textContent = 'Votre CV est bien optimisé pour les systèmes ATS';
+    else if (score >= 60) verdict.textContent = 'Votre CV est correct mais peut être amélioré';
+    else verdict.textContent = 'Votre CV nécessite des améliorations pour passer les filtres ATS';
+
+    const catContainer = document.getElementById('atsCategories');
+    const catLabels = {
+      keywords: { name: '🔑 Mots-clés', desc: 'Correspondance avec le secteur' },
+      format: { name: '📄 Format', desc: 'Compatibilité ATS' },
+      readability: { name: '👁 Lisibilité', desc: 'Clarté et structure' },
+      length: { name: '📏 Longueur', desc: 'Taille appropriée' }
+    };
+    let catHtml = '';
+    for (const [key, info] of Object.entries(catLabels)) {
+      const cat = cv.atsDetails[key];
+      if (cat) {
+        const tagClass = cat.score >= 80 ? 'excellent' : cat.score >= 60 ? 'bon' : cat.score >= 40 ? 'moyen' : 'faible';
+        catHtml += `<div class="ats-cat">
+          <div class="ats-cat-name">${info.name}</div>
+          <div class="ats-cat-desc">${info.desc}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
+              <div style="height:100%;width:${cat.score}%;background:${cat.score >= 80 ? 'var(--green)' : cat.score >= 60 ? 'var(--blue)' : cat.score >= 40 ? '#e6a817' : 'var(--red)'};border-radius:3px;"></div>
+            </div>
+            <span class="ats-cat-tag ${tagClass}">${cat.label || cat.score + '/100'}</span>
+          </div>
+        </div>`;
+      }
+    }
+    catContainer.innerHTML = catHtml;
+    detailPanel.style.display = 'block';
+  }
+
+  // ── SUGGESTIONS IA ──
+  const suggestionsPanel = document.getElementById('atsSuggestions');
+  if (cv.suggestions && cv.suggestions.length > 0 && suggestionsPanel) {
+    let sugHtml = '';
+    cv.suggestions.forEach(function(s) {
+      sugHtml += `<div class="suggestion-item">
+        <span class="suggestion-icon">${s.icon || '💡'}</span>
+        <div><strong>${s.title}</strong><br><span style="color:var(--muted)">${s.text}</span></div>
+      </div>`;
+    });
+    document.getElementById('suggestionsContent').innerHTML = sugHtml;
+    suggestionsPanel.style.display = 'block';
+  }
 
   let html = `
     <h2>${name || 'Votre Nom'}</h2>

@@ -95,6 +95,17 @@ Règles ATS obligatoires :
 Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après :
 {
   "atsScore": 87,
+  "atsDetails": {
+    "keywords": {"score": 85, "label": "Bon"},
+    "format": {"score": 92, "label": "Excellent"},
+    "readability": {"score": 88, "label": "Optimal"},
+    "length": {"score": 72, "label": "À ajuster"}
+  },
+  "suggestions": [
+    {"icon": "💡", "title": "Titre court de la suggestion", "text": "Explication concrète et actionnable basée sur le CV réel du candidat"},
+    {"icon": "🔑", "title": "Autre suggestion", "text": "Autre explication concrète"},
+    {"icon": "✂️", "title": "Troisième suggestion", "text": "Troisième explication"}
+  ],
   "name": "Prénom Nom extrait du CV",
   "targetJob": "Titre du poste extrait ou visé",
   "contact": "email · téléphone · ville extraits",
@@ -114,11 +125,23 @@ Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après :
   "skills": ["compétence1", "compétence2", "compétence3", "compétence4", "compétence5", "compétence6"],
   "education": "Diplôme, École, Année",
   "keywords": ["mot-clé ATS 1", "mot-clé ATS 2", "mot-clé ATS 3", "mot-clé ATS 4", "mot-clé ATS 5", "mot-clé ATS 6", "mot-clé ATS 7", "mot-clé ATS 8"]
-}`;
+}
+
+Règles pour "atsDetails" :
+- "keywords" : note de 0-100 pour la correspondance des mots-clés du secteur. Label : "Excellent" (80+), "Bon" (60-79), "À améliorer" (<60)
+- "format" : note de 0-100 pour la compatibilité du format (pas de tableaux, colonnes simples, sections claires). Label : "Compatible" (80+), "Acceptable" (60-79), "Problématique" (<60)
+- "readability" : note de 0-100 pour la clarté et la lisibilité. Label : "Optimal" (80+), "Correct" (60-79), "À revoir" (<60)
+- "length" : note de 0-100 pour la longueur appropriée (1-2 pages). Label : "Idéal" (80+), "Acceptable" (60-79), "À ajuster" (<60)
+
+Règles pour "suggestions" :
+- Exactement 3 suggestions concrètes et actionnables
+- Basées sur le VRAI contenu du CV, pas génériques
+- Chaque suggestion doit expliquer QUOI changer et COMMENT
+- Icônes possibles : 💡 (amélioration), 🔑 (mots-clés), ✂️ (raccourcir), 📊 (chiffres), 🎯 (ciblage)`;
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: 2500,
       messages: [{ role: 'user', content: prompt }]
     });
 

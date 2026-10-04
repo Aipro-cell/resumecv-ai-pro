@@ -1147,11 +1147,47 @@ function handleDownloadClick(format) {
 function downloadCVPdf() {
   const el = document.getElementById('cvPreview');
   showToast('⏳ Génération du PDF…');
+
+  // Résoudre les CSS variables en couleurs explicites pour html2canvas
+  const colorMap = {
+    'var(--ink)': '#0F172A',
+    'var(--ink-muted)': '#475569',
+    'var(--ink-faint)': '#94A3B8',
+    'var(--blue)': '#2563EB',
+    'var(--border)': '#E2E8F0',
+    'var(--green)': '#16A34A',
+    'var(--orange)': '#EA580C',
+    'var(--red)': '#DC2626'
+  };
+
   const opt = {
     margin:       [10, 10, 10, 10],
     filename:     'CV-optimise-ATS.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
+    html2canvas:  {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      onclone: function(clonedDoc) {
+        var clonedEl = clonedDoc.getElementById('cvPreview');
+        // Supprimer le blur si présent
+        var outputEl = clonedDoc.getElementById('outputContent');
+        if (outputEl) outputEl.classList.remove('cv-locked');
+        // Appliquer les couleurs explicites sur tous les éléments
+        clonedEl.style.color = '#0F172A';
+        clonedEl.style.backgroundColor = '#ffffff';
+        clonedEl.style.webkitUserSelect = 'text';
+        clonedEl.style.userSelect = 'text';
+        var allEls = clonedEl.querySelectorAll('*');
+        for (var i = 0; i < allEls.length; i++) {
+          var child = allEls[i];
+          var cs = window.getComputedStyle(child);
+          child.style.color = cs.color;
+          child.style.backgroundColor = cs.backgroundColor;
+          if (cs.borderBottomColor) child.style.borderBottomColor = cs.borderBottomColor;
+        }
+      }
+    },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(el).save().then(() => {

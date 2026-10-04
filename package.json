@@ -1,0 +1,11 @@
+{
+  "name": "resumeai-pro",
+  "version": "1.0.0",
+  "description": "ResumeAI Pro — CV optimisé ATS avec extraction PDF",
+  "dependencies": {
+    "pdf-parse": "^1.1.1",
+    "@anthropic-ai/sdk": "^0.20.0",
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

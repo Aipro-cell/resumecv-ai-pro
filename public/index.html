@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ResumeCV AI Pro — CV optimisé ATS en 2 minutes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --blue: #2563EB;
+  --blue-dark: #1D4ED8;
+  --blue-light: #EFF6FF;
+  --ink: #0F172A;
+  --ink-muted: #475569;
+  --ink-faint: #94A3B8;
+  --border: #E2E8F0;
+  --bg: #F8FAFC;
+  --white: #ffffff;
+  --green: #16A34A;
+  --green-light: #F0FDF4;
+  --orange: #EA580C;
+  --orange-light: #FFF7ED;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+}
+.logo { font-weight: 800; font-size: 1.15rem; color: var(--ink); letter-spacing: -.02em; }
+.logo span { color: var(--blue); }
+nav .nav-right { display: flex; align-items: center; gap: 12px; }
+.btn-ghost { background: none; border: 1.5px solid var(--border); color: var(--ink); padding: 7px 16px; border-radius: 8px; font-size: .875rem; font-weight: 500; cursor: pointer; transition: border-color .15s; }
+.btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+.btn-primary { background: var(--blue); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; transition: background .15s; }
+.btn-primary:hover { background: var(--blue-dark); }
+
+/* HERO */
+.hero { text-align: center; padding: 80px 20px 64px; max-width: 780px; margin: 0 auto; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-light); color: var(--blue); font-size: .78rem; font-weight: 600; padding: 5px 12px; border-radius: 100px; margin-bottom: 24px; }
+.badge-dot { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; animation: pulse 1.8s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 800; line-height: 1.15; letter-spacing: -.03em; color: var(--ink); margin-bottom: 20px; }
+.hero h1 em { font-style: normal; color: var(--blue); }
+.hero p { font-size: 1.1rem; color: var(--ink-muted); max-width: 520px; margin: 0 auto 36px; }
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-hero { background: var(--blue); color: white; border: none; padding: 14px 28px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .15s, transform .1s; }
+.btn-hero:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.btn-hero-ghost { background: white; color: var(--ink); border: 1.5px solid var(--border); padding: 14px 24px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.hero-stats { display: flex; justify-content: center; gap: 40px; margin-top: 52px; padding-top: 32px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.hero-stat strong { display: block; font-size: 1.7rem; font-weight: 800; color: var(--ink); letter-spacing: -.03em; }
+.hero-stat span { font-size: .82rem; color: var(--ink-faint); font-weight: 500; }
+
+/* ATS SCORE PREVIEW */
+.score-preview { max-width: 860px; margin: 0 auto 80px; padding: 0 20px; }
+.score-card { background: white; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; }
+.score-card-top { display: flex; gap: 0; }
+.score-left { flex: 1; padding: 32px; border-right: 1px solid var(--border); }
+.score-left h3 { font-size: .8rem; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
+.score-circle-wrap { display: flex; align-items: center; gap: 24px; }
+.score-circle { width: 96px; height: 96px; border-radius: 50%; background: conic-gradient(var(--green) 0% 87%, var(--border) 87% 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+.score-circle::before { content:''; position:absolute; width:70px; height:70px; background:white; border-radius:50%; }
+.score-circle-num { position: relative; z-index:1; font-size: 1.5rem; font-weight: 800; color: var(--green); }
+.score-details { flex: 1; }
+.score-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: .85rem; border-bottom: 1px solid var(--border); }
+.score-item:last-child { border: none; }
+.score-item .label { color: var(--ink-muted); }
+.tag-ok { background: var(--green-light); color: var(--green); font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+.tag-warn { background: var(--orange-light); color: var(--orange); font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+.score-right { flex: 1.1; padding: 32px; background: var(--bg); }
+.score-right h3 { font-size: .8rem; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
+.suggestion { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: .84rem; }
+.suggestion .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.suggestion p { color: var(--ink-muted); line-height: 1.4; }
+.suggestion strong { color: var(--ink); display: block; font-size: .82rem; }
+
+/* HOW IT WORKS */
+.section { max-width: 880px; margin: 0 auto 80px; padding: 0 20px; }
+.section-label { font-size: .78rem; font-weight: 700; color: var(--blue); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+.section h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; letter-spacing: -.025em; margin-bottom: 40px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.step { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.step-num { width: 36px; height: 36px; background: var(--blue-light); color: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .95rem; margin-bottom: 14px; }
+.step h4 { font-size: .95rem; font-weight: 700; margin-bottom: 6px; }
+.step p { font-size: .84rem; color: var(--ink-muted); line-height: 1.5; }
+
+/* PRICING */
+.pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.plan { background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 28px; position: relative; }
+.plan.featured { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-light); }
+.plan-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--blue); color: white; font-size: .72rem; font-weight: 700; padding: 3px 12px; border-radius: 100px; white-space: nowrap; }
+.plan-name { font-size: .8rem; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.plan-price { font-size: 2.2rem; font-weight: 800; letter-spacing: -.04em; margin-bottom: 4px; }
+.plan-price sub { font-size: .9rem; font-weight: 500; color: var(--ink-muted); vertical-align: super; margin-right: 2px; }
+.plan-desc { font-size: .83rem; color: var(--ink-muted); margin-bottom: 20px; }
+.plan-features { list-style: none; margin-bottom: 24px; }
+.plan-features li { font-size: .85rem; color: var(--ink-muted); padding: 5px 0; display: flex; gap: 8px; align-items: flex-start; }
+.plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+.btn-plan { width: 100%; padding: 11px; border-radius: 9px; font-size: .9rem; font-weight: 700; cursor: pointer; transition: .15s; }
+.btn-plan-primary { background: var(--blue); color: white; border: none; }
+.btn-plan-primary:hover { background: var(--blue-dark); }
+.btn-plan-outline { background: none; border: 1.5px solid var(--border); color: var(--ink); }
+.btn-plan-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+/* APP SECTION */
+.app-section { background: white; border-top: 1px solid var(--border); padding: 60px 20px; }
+.app-wrap { max-width: 960px; margin: 0 auto; }
+.app-title { text-align: center; margin-bottom: 40px; }
+.app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+@media(max-width: 700px) { .app-grid { grid-template-columns: 1fr; } .score-card-top { flex-direction: column; } .score-left { border-right: none; border-bottom: 1px solid var(--border); } nav { padding: 0 20px; } }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: .8rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 5px; }
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: .88rem; color: var(--ink); background: var(--bg);
+  transition: border-color .15s; outline: none;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--blue); background: white; }
+.form-group textarea { min-height: 90px; resize: vertical; }
+.form-section-title { font-size: .78rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .08em; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.generate-btn { width: 100%; padding: 13px; background: var(--blue); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .15s; }
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 10px; padding: 20px 16px;
+  text-align: center; cursor: pointer; transition: .2s; background: var(--bg);
+  margin-bottom: 14px;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--blue); background: var(--blue-light); }
+.upload-zone .upload-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.upload-zone p { font-size: .82rem; color: var(--ink-muted); }
+.upload-zone strong { color: var(--blue); }
+.upload-zone input[type=file] { display: none; }
+.upload-success { background: var(--green-light); border: 1.5px solid var(--green); border-radius: 9px; padding: 10px 14px; font-size: .82rem; color: var(--green); display: none; align-items: center; gap: 8px; margin-bottom: 12px; }
+.upload-success.on { display: flex; }
+.mode-tabs { display: flex; gap: 0; border: 1.5px solid var(--border); border-radius: 9px; overflow: hidden; margin-bottom: 16px; }
+.mode-tab { flex: 1; padding: 9px; text-align: center; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; border: none; background: white; color: var(--ink-muted); transition: .15s; }
+.mode-tab.active { background: var(--blue); color: white; }
+.generate-btn:hover { background: var(--blue-dark); }
+.generate-btn:disabled { background: var(--ink-faint); cursor: not-allowed; }
+
+.output-panel { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 24px; min-height: 500px; position: relative; }
+.output-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 12px; color: var(--ink-faint); text-align: center; }
+.output-placeholder .big-icon { font-size: 2.5rem; }
+.output-placeholder p { font-size: .85rem; max-width: 200px; }
+.output-content { display: none; }
+.output-content.active { display: block; }
+.ats-live-score { display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+.ats-live-score .label { font-size: .8rem; color: var(--ink-muted); font-weight: 500; }
+.ats-live-score .score-val { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+.cv-preview { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-size: .82rem; line-height: 1.6; color: var(--ink); }
+.cv-preview h2 { font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; border-bottom: 2px solid var(--blue); padding-bottom: 6px; margin-bottom: 12px; }
+.cv-preview h3 { font-size: .85rem; font-weight: 700; color: var(--blue); margin: 14px 0 4px; }
+.cv-preview p { color: var(--ink-muted); margin-bottom: 6px; }
+.cv-preview .cv-contact { display: flex; gap: 12px; font-size: .78rem; color: var(--ink-faint); flex-wrap: wrap; margin-bottom: 14px; }
+.cv-preview .cv-section { margin-bottom: 16px; }
+.cv-preview .cv-section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.cv-preview .job { margin-bottom: 10px; }
+.cv-preview .job-title { font-weight: 700; font-size: .85rem; }
+.cv-preview .job-meta { font-size: .76rem; color: var(--ink-faint); margin-bottom: 4px; }
+.cv-preview ul { padding-left: 16px; }
+.cv-preview li { font-size: .8rem; color: var(--ink-muted); margin-bottom: 3px; }
+.keywords-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.kw { background: var(--blue-light); color: var(--blue); font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+.action-bar { display: flex; gap: 8px; margin-top: 14px; }
+.action-bar button { flex: 1; padding: 9px; border-radius: 8px; font-size: .82rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: white; color: var(--ink); transition: .15s; }
+.action-bar button:hover { border-color: var(--blue); color: var(--blue); }
+.action-bar .btn-dl { background: var(--blue); color: white; border-color: var(--blue); }
+.action-bar .btn-dl:hover { background: var(--blue-dark); }
+
+/* ANTI-COPY : empêche sélection texte */
+.cv-preview {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* FLOU pour non-payeurs */
+.output-content.cv-locked .cv-preview {
+  filter: blur(5px);
+  pointer-events: none;
+}
+.output-content.cv-locked #keywordsSection {
+  filter: blur(5px);
+}
+.cv-lock-msg {
+  display: none;
+  background: white;
+  border: 2px solid var(--blue);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.cv-lock-msg h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.cv-lock-msg p { font-size: .84rem; color: var(--ink-muted); margin-bottom: 14px; }
+.cv-lock-msg button { background: var(--blue); color: white; border: none; padding: 11px 24px; border-radius: 9px; font-size: .9rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.cv-lock-msg button:hover { background: var(--blue-dark); }
+.output-content.cv-locked .cv-lock-msg { display: block; }
+
+/* LETTRE DE MOTIVATION */
+.cover-letter-section {
+  margin-top: 20px;
+  border-top: 2px solid var(--border);
+  padding-top: 20px;
+}
+.cl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cl-header h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cl-badge-sub {
+  background: var(--green-light);
+  color: var(--green);
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+.cl-locked-msg {
+  background: linear-gradient(135deg, var(--blue-light), #EDE9FE);
+  border: 1.5px solid #C7D2FE;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.cl-locked-msg .cl-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.cl-locked-msg h4 { font-size: .9rem; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
+.cl-locked-msg p { font-size: .82rem; color: var(--ink-muted); margin-bottom: 14px; }
+.cl-locked-msg button {
+  background: var(--blue);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 9px;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+}
+.cl-locked-msg button:hover { background: var(--blue-dark); }
+.btn-generate-cl {
+  width: 100%;
+  padding: 12px;
+  background: #7C3AED;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: .92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+}
+.btn-generate-cl:hover { background: #6D28D9; }
+.btn-generate-cl:disabled { background: var(--ink-faint); cursor: not-allowed; }
+.cl-result {
+  display: none;
+  margin-top: 14px;
+}
+.cl-result.active { display: block; }
+.cl-preview {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  font-size: .84rem;
+  line-height: 1.75;
+  color: var(--ink);
+  white-space: pre-wrap;
+  font-family: 'Inter', sans-serif;
+}
+.cl-matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.cl-match {
+  background: #EDE9FE;
+  color: #7C3AED;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+.cl-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.cl-actions button {
+  flex: 1;
+  padding: 9px;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--ink);
+  font-family: inherit;
+  transition: .15s;
+}
+.cl-actions button:hover { border-color: #7C3AED; color: #7C3AED; }
+.cl-actions .btn-cl-dl {
+  background: #7C3AED;
+  color: white;
+  border-color: #7C3AED;
+}
+.cl-actions .btn-cl-dl:hover { background: #6D28D9; }
+.cl-loading {
+  display: none;
+  text-align: center;
+  padding: 24px;
+}
+.cl-loading.active { display: block; }
+.cl-loading .spinner { margin: 0 auto 10px; }
+.cl-loading p { font-size: .84rem; color: var(--ink-muted); font-weight: 500; }
+
+/* LOADING */
+.loading-overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,.85); backdrop-filter: blur(4px); border-radius: 12px; align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 10; }
+.loading-overlay.active { display: flex; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay p { font-size: .85rem; font-weight: 600; color: var(--ink-muted); }
+
+/* TESTIMONIALS */
+.testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.testimonial { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.testimonial-text { font-size: .88rem; color: var(--ink-muted); line-height: 1.55; margin-bottom: 14px; }
+.testimonial-author { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: white; flex-shrink: 0; }
+.testimonial-author .meta strong { display: block; font-size: .83rem; }
+.testimonial-author .meta span { font-size: .76rem; color: var(--ink-faint); }
+.stars { color: #F59E0B; font-size: .8rem; margin-bottom: 10px; }
+
+/* FOOTER */
+footer { background: var(--ink); color: rgba(255,255,255,.5); text-align: center; padding: 28px 20px; font-size: .82rem; margin-top: 0; }
+footer a { color: rgba(255,255,255,.6); text-decoration: none; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.modal { background: white; border-radius: 16px; padding: 36px; max-width: 420px; width: 100%; box-shadow: var(--shadow-lg); }
+.modal h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; }
+.modal p { font-size: .88rem; color: var(--ink-muted); margin-bottom: 24px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--ink-muted); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: white; padding: 12px 18px; border-radius: 10px; font-size: .85rem; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 300; transform: translateY(60px); opacity: 0; transition: .3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* AUTH */
+.auth-tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 20px; }
+.auth-tab { flex: 1; padding: 10px; text-align: center; font-size: .88rem; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--ink-muted); border-bottom: 2px solid transparent; margin-bottom: -1.5px; transition: .15s; font-family: inherit; }
+.auth-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.auth-field { margin-bottom: 14px; }
+.auth-field label { display: block; font-size: .78rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 5px; }
+.auth-field input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .88rem; color: var(--ink); outline: none; transition: border-color .15s; }
+.auth-field input:focus { border-color: var(--blue); }
+.auth-btn { width: 100%; padding: 12px; background: var(--blue); color: white; border: none; border-radius: 9px; font-size: .95rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; }
+.auth-btn:hover { background: var(--blue-dark); }
+.auth-btn:disabled { background: var(--ink-faint); cursor: not-allowed; }
+.auth-divider { text-align: center; font-size: .75rem; color: var(--ink-faint); margin: 14px 0; }
+.auth-forgot { font-size: .76rem; color: var(--blue); cursor: pointer; text-align: right; margin-top: -8px; margin-bottom: 14px; display: block; }
+.user-bar { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; cursor: pointer; }
+.user-email { font-size: .8rem; color: var(--ink-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-logout { background: none; border: 1.5px solid var(--border); color: var(--ink-muted); font-family: inherit; font-size: .78rem; padding: 5px 12px; border-radius: 7px; cursor: pointer; }
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+.plan-badge-user { background: var(--green-light); color: var(--green); font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+.plan-badge-free { background: var(--orange-light); color: var(--orange); font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+.locked-overlay { position: absolute; inset: 0; background: rgba(248,250,252,.92); backdrop-filter: blur(4px); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 20; }
+.locked-overlay h3 { font-size: 1rem; font-weight: 700; }
+.locked-overlay p { font-size: .84rem; color: var(--ink-muted); text-align: center; max-width: 220px; }
+.locked-overlay button { background: var(--blue); color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: .88rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">ResumeCV <span>AI</span> Pro</div>
+  <div class="nav-right" id="navRight">
+    <button class="btn-ghost" onclick="scrollToApp()">Essayer gratuitement</button>
+    <button class="btn-primary" onclick="openAuthModal('signup')">Créer un compte</button>
+    <button class="btn-ghost" onclick="openAuthModal('login')">Se connecter</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge"><span class="badge-dot"></span> Propulsé par l'IA · Optimisé ATS</div>
+  <h1>Votre CV passe les filtres <em>automatiques</em> des recruteurs</h1>
+  <p>80% des CV sont éliminés avant d'être lus par un humain. ResumeCV AI Pro génère un CV optimisé pour les ATS en 2 minutes.</p>
+  <div class="hero-cta">
+    <button class="btn-hero" onclick="scrollToApp()">Générer mon CV maintenant</button>
+    <button class="btn-hero-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Comment ça marche</button>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><strong>+73%</strong><span>de réponses recruteurs</span></div>
+    <div class="hero-stat"><strong>2 min</strong><span>pour un CV complet</span></div>
+    <div class="hero-stat"><strong>+2 400</strong><span>CV générés ce mois</span></div>
+    <div class="hero-stat"><strong>4.9/5</strong><span>satisfaction client</span></div>
+  </div>
+</section>
+
+<!-- SCORE PREVIEW -->
+<div class="score-preview">
+  <div class="score-card">
+    <div class="score-card-top">
+      <div class="score-left">
+        <h3>Score ATS en temps réel</h3>
+        <div class="score-circle-wrap">
+          <div class="score-circle"><span class="score-circle-num">87</span></div>
+          <div class="score-details">
+            <div class="score-item"><span class="label">Mots-clés</span><span class="tag-ok">Excellent</span></div>
+            <div class="score-item"><span class="label">Format</span><span class="tag-ok">Compatible</span></div>
+            <div class="score-item"><span class="label">Lisibilité</span><span class="tag-ok">Optimal</span></div>
+            <div class="score-item"><span class="label">Longueur</span><span class="tag-warn">À ajuster</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="score-right">
+        <h3>Suggestions IA</h3>
+        <div class="suggestion"><span class="icon">💡</span><div><strong>Ajouter des métriques</strong><p>Remplacez "géré une équipe" par "géré une équipe de 8 personnes, +24% de productivité"</p></div></div>
+        <div class="suggestion"><span class="icon">🔑</span><div><strong>Mots-clés manquants</strong><p>Ajoutez "gestion de projet", "Agile/Scrum" pour correspondre à l'offre cible</p></div></div>
+        <div class="suggestion"><span class="icon">✂️</span><div><strong>Raccourcir la section Compétences</strong><p>8 compétences idéales — vous en avez 14. Supprimez les moins récentes.</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">Processus</div>
+  <h2>Trois étapes, un CV qui passe partout</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Collez votre expérience</h4>
+      <p>Remplissez le formulaire ou collez votre CV existant. L'IA extrait les informations clés automatiquement.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>L'IA optimise pour l'ATS</h4>
+      <p>Notre modèle reformule vos expériences avec les bons mots-clés et le bon format selon l'offre d'emploi ciblée.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Téléchargez et postulez</h4>
+      <p>Obtenez votre CV en PDF ou DOCX, avec un score ATS de 80+ garanti ou on recommence gratuitement.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Adaptez pour chaque offre</h4>
+      <p>Personnalisez votre CV en quelques secondes pour chaque candidature en collant simplement l'offre d'emploi.</p>
+    </div>
+  </div>
+</section>
+
+<!-- APP -->
+<section class="app-section" id="app">
+  <div class="app-wrap">
+    <div class="app-title">
+      <div class="section-label">Générateur</div>
+      <h2 style="font-size:1.8rem;font-weight:800;letter-spacing:-.025em;">Créez votre CV optimisé maintenant</h2>
+    </div>
+    <div class="app-grid">
+      <!-- FORM -->
+      <div class="input-panel">
+        <!-- MODE TABS -->
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="tab-form" onclick="switchMode('form')">✏️ Saisir manuellement</button>
+          <button class="mode-tab" id="tab-upload" onclick="switchMode('upload')">📄 Importer mon CV</button>
+        </div>
+
+        <!-- UPLOAD ZONE -->
+        <div id="upload-section" style="display:none;">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('cvFile').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+            <div class="upload-icon">📄</div>
+            <p><strong>Cliquez ou glissez votre CV ici</strong></p>
+            <p style="margin-top:4px;font-size:.76rem;">PDF, DOCX, TXT — max 5 Mo</p>
+            <input type="file" id="cvFile" accept=".pdf,.doc,.docx,.txt" onchange="handleFileUpload(event)" />
+          </div>
+          <div class="upload-success" id="uploadSuccess">
+            <span>✅</span><span id="uploadFilename">CV chargé avec succès</span>
+          </div>
+          <div class="form-group">
+            <label>Poste visé (obligatoire)</label>
+            <input type="text" id="upload-target-job" placeholder="Chef de projet digital" />
+          </div>
+          <div class="form-group">
+            <label>Offre d'emploi cible (optionnel)</label>
+            <textarea id="upload-job-offer" placeholder="Collez l'offre pour ultra-cibler le CV reformaté…" style="min-height:70px;"></textarea>
+          </div>
+          <button class="generate-btn" id="convertBtn" onclick="convertCV()" style="background:var(--green);">🔄 Convertir en format ATS</button>
+        </div>
+
+        <!-- FORM SECTION -->
+        <div id="form-section">
+        <div class="form-section-title">Informations personnelles</div>
+        <div class="form-group">
+          <label>Nom complet</label>
+          <input type="text" id="name" placeholder="Marie Dupont" />
+        </div>
+        <div class="form-group">
+          <label>Poste visé</label>
+          <input type="text" id="target-job" placeholder="Chef de projet digital" />
+        </div>
+        <div class="form-group">
+          <label>Email · Téléphone · LinkedIn</label>
+          <input type="text" id="contact" placeholder="marie@email.com · 06 XX XX XX XX" />
+        </div>
+        <div class="form-section-title">Expériences professionnelles</div>
+        <div class="form-group">
+          <label>Décrivez vos 2–3 derniers postes</label>
+          <textarea id="experience" placeholder="Ex: Marketing Manager chez Deezer (2021–2024). Géré une équipe de 6, lancé 3 campagnes majeures, augmenté le taux de conversion de 18%..."></textarea>
+        </div>
+        <div class="form-section-title">Compétences & Formation</div>
+        <div class="form-group">
+          <label>Compétences clés</label>
+          <input type="text" id="skills" placeholder="Excel, Notion, Figma, SEO, SQL..." />
+        </div>
+        <div class="form-group">
+          <label>Formation</label>
+          <input type="text" id="education" placeholder="Master Marketing Digital, ESCP, 2020" />
+        </div>
+        <div class="form-section-title">Offre d'emploi cible (optionnel)</div>
+        <div class="form-group">
+          <label>Collez l'offre pour ultra-cibler votre CV</label>
+          <textarea id="job-offer" placeholder="Nous recherchons un(e) chef de projet pour piloter nos initiatives digitales..."></textarea>
+        </div>
+        <button class="generate-btn" id="generateBtn" onclick="generateCV()">✨ Générer mon CV optimisé ATS</button>
+        </div><!-- end form-section -->
+      </div>
+      <!-- OUTPUT -->
+      <div class="output-panel" id="outputPanel">
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="spinner"></div>
+          <p id="loadingText">Analyse de votre profil…</p>
+        </div>
+        <div class="output-placeholder" id="placeholder">
+          <div class="big-icon">📄</div>
+          <p>Remplissez le formulaire et cliquez sur Générer</p>
+        </div>
+        <div class="output-content" id="outputContent">
+          <div class="ats-live-score">
+            <span class="label">Score ATS</span>
+            <span class="score-val" id="atsScore">—</span>
+          </div>
+          <div class="cv-preview" id="cvPreview"></div>
+          <div id="keywordsSection" style="margin-top:12px;display:none;">
+            <div style="font-size:.75rem;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Mots-clés ATS détectés</div>
+            <div class="keywords-wrap" id="keywordsList"></div>
+          </div>
+          <div class="cv-lock-msg" id="cvLockMsg">
+            <h3>🔒 CV complet verrouillé</h3>
+            <p>Payez 2,99€ ou abonnez-vous pour accéder au CV complet et le télécharger en PDF ou DOC.</p>
+            <button onclick="handleDownloadClick('pdf')">Débloquer mon CV — 2,99€</button>
+          </div>
+          <div class="action-bar">
+            <button onclick="handleDownloadClick('pdf')" class="btn-dl" id="dlBtnPdf">⬇ PDF — 2,99€</button>
+            <button onclick="handleDownloadClick('doc')" class="btn-dl" id="dlBtnDoc">⬇ DOC — 2,99€</button>
+          </div>
+
+          <!-- LETTRE DE MOTIVATION -->
+          <div class="cover-letter-section" id="coverLetterSection">
+            <div class="cl-header">
+              <h3>✉️ Lettre de motivation</h3>
+              <span class="cl-badge-sub" id="clBadge" style="display:none;">Abonné ✓</span>
+            </div>
+
+            <!-- Message pour non-abonnés -->
+            <div id="clLockedMsg" class="cl-locked-msg">
+              <div class="cl-icon">✉️</div>
+              <h4>Lettre de motivation personnalisée</h4>
+              <p>Générez une lettre adaptée à chaque offre d'emploi en un clic. Réservé aux abonnés mensuels.</p>
+              <button onclick="subscribeMonthly()">S'abonner — 7,99€/mois</button>
+            </div>
+
+            <!-- Bouton pour abonnés -->
+            <div id="clUnlocked" style="display:none;">
+              <p style="font-size:.82rem;color:var(--ink-muted);margin-bottom:12px;">Générez une lettre de motivation adaptée à l'offre d'emploi que vous avez collée. L'IA analyse votre CV et l'offre pour créer une lettre percutante.</p>
+              <button class="btn-generate-cl" id="generateClBtn" onclick="generateCoverLetter()">✉️ Générer ma lettre de motivation</button>
+
+              <!-- Loading -->
+              <div class="cl-loading" id="clLoading">
+                <div class="spinner"></div>
+                <p id="clLoadingText">Rédaction de votre lettre…</p>
+              </div>
+
+              <!-- Résultat -->
+              <div class="cl-result" id="clResult">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                  <span style="font-size:.8rem;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;">Lettre pour</span>
+                  <span style="font-size:.82rem;font-weight:700;color:#7C3AED;" id="clCompany"></span>
+                </div>
+                <div class="cl-preview" id="clPreview"></div>
+                <div style="font-size:.75rem;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:12px;margin-bottom:6px;">Points forts matchés</div>
+                <div class="cl-matches" id="clMatches"></div>
+                <div class="cl-actions">
+                  <button onclick="copyCoverLetter()">📋 Copier</button>
+                  <button class="btn-cl-dl" onclick="downloadCoverLetterPdf()">⬇ PDF</button>
+                  <button class="btn-cl-dl" onclick="downloadCoverLetterDoc()">⬇ DOC</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" style="margin-top:60px;">
+  <div class="section-label">Témoignages</div>
+  <h2>Ils ont décroché leur entretien</h2>
+  <div class="testimonials">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"J'envoyais des CV depuis 3 mois sans réponse. Avec ResumeCV AI Pro, j'ai eu 4 entretiens en 2 semaines. Le score ATS m'a ouvert les yeux."</p>
+      <div class="testimonial-author">
+        <div class="avatar" style="background:#2563EB;">LM</div>
+        <div class="meta"><strong>Lucas M.</strong><span>Développeur front-end · Paris</span></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"La fonctionnalité d'adapter le CV à chaque offre est magique. 20 minutes pour postuler à 5 boîtes différentes avec un CV personnalisé à chaque fois."</p>
+      <div class="testimonial-author">
+        <div class="avatar" style="background:#16A34A;">SC</div>
+        <div class="meta"><strong>Sophie C.</strong><span>Chargée de com · Lyon</span></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"Je pensais que mon CV était bon. Le score ATS m'a montré qu'il y avait 12 mots-clés manquants pour mon secteur. Après correction, taux de réponse x3."</p>
+      <div class="testimonial-author">
+        <div class="avatar" style="background:#EA580C;">AR</div>
+        <div class="meta"><strong>Antoine R.</strong><span>Ingénieur data · Bordeaux</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section">
+  <div class="section-label">Tarifs</div>
+  <h2>Simple et transparent</h2>
+  <div class="pricing" style="max-width:620px;margin:0 auto;">
+    <div class="plan">
+      <div class="plan-name">À l'unité</div>
+      <div class="plan-price"><sub>€</sub>2<span style="font-size:1.1rem;">,99</span></div>
+      <div class="plan-desc">Par CV généré. Parfait pour tester.</div>
+      <ul class="plan-features">
+        <li>1 CV optimisé ATS</li>
+        <li>Score ATS détaillé</li>
+        <li>Export PDF + DOCX</li>
+        <li>Suggestions IA incluses</li>
+        <li>Adaptation à chaque offre</li>
+      </ul>
+      <button class="btn-plan btn-plan-outline" onclick="scrollToApp()">Générer un CV</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">⚡ Le plus populaire</div>
+      <div class="plan-name">Mensuel</div>
+      <div class="plan-price"><sub>€</sub>7<span style="font-size:1.1rem;">,99</span></div>
+      <div class="plan-desc">Par mois · CV illimités · Sans engagement</div>
+      <ul class="plan-features">
+        <li>CV illimités</li>
+        <li>Score ATS en temps réel</li>
+        <li>Adaptation à chaque offre</li>
+        <li>Export PDF + DOCX</li>
+        <li>Suggestions IA incluses</li>
+        <li><strong style="color:var(--ink);">✉️ Lettre de motivation IA adaptée</strong></li>
+        <li>Accès prioritaire aux nouvelles fonctions</li>
+      </ul>
+      <button class="btn-plan btn-plan-primary" onclick="subscribeMonthly()">S'abonner — 7,99€/mois</button>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL AUTH -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:1.8rem;margin-bottom:6px;">📄</div>
+      <div style="font-weight:800;font-size:1.1rem;">ResumeCV <span style="color:var(--blue);">AI</span> Pro</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Se connecter</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Créer un compte</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="auth-login">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="vous@email.com" />
+      </div>
+      <div class="auth-field">
+        <label>Mot de passe</label>
+        <input type="password" id="login-pwd" placeholder="Votre mot de passe" />
+      </div>
+      <span class="auth-forgot" onclick="resetPassword()">Mot de passe oublié ?</span>
+      <button class="auth-btn" id="loginBtn" onclick="handleLogin()">Se connecter</button>
+      <div class="auth-divider">Pas encore de compte ?</div>
+      <button class="auth-btn" style="background:white;color:var(--blue);border:1.5px solid var(--blue);" onclick="switchAuthTab('signup')">Créer un compte gratuit</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="auth-signup" style="display:none;">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="vous@email.com" />
+      </div>
+      <div class="auth-field">
+        <label>Mot de passe</label>
+        <input type="password" id="signup-pwd" placeholder="Minimum 6 caractères" />
+      </div>
+      <div class="auth-field">
+        <label>Confirmer le mot de passe</label>
+        <input type="password" id="signup-pwd2" placeholder="Répétez le mot de passe" />
+      </div>
+      <button class="auth-btn" id="signupBtn" onclick="handleSignup()">Créer mon compte</button>
+      <p style="font-size:.74rem;color:var(--ink-faint);text-align:center;margin-top:10px;">En créant un compte vous acceptez nos <a href="#" onclick="openCGV();return false;" style="color:var(--blue);">CGV</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAIEMENT -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>📄 Débloquer votre CV</h2>
+    <p style="margin-bottom:6px;">Votre CV optimisé ATS est prêt. Payez 2,99€ pour le débloquer et le télécharger en PDF ou DOC.</p>
+    <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.8rem;color:var(--blue);">
+      🔓 Après paiement, vous serez redirigé ici et votre CV sera automatiquement débloqué.
+    </div>
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:.82rem;color:var(--ink-muted);display:flex;align-items:center;gap:10px;">
+      💳 <span>Paiement sécurisé via <strong style="color:var(--ink);">Stripe</strong> · CB, Apple Pay, Google Pay</span>
+    </div>
+    <button class="btn-plan btn-plan-primary" style="padding:13px;font-size:.95rem;" onclick="processPayment()">Payer 2,99€ et recevoir mon CV</button>
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;text-align:center;">
+      <p style="font-size:.78rem;color:var(--ink-muted);margin-bottom:8px;">Vous postulez souvent ? L'abonnement est plus rentable.</p>
+      <button onclick="closeModal();subscribeMonthly();" style="background:none;border:1.5px solid var(--border);color:var(--ink);padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;">⚡ Abonnement illimité — 7,99€/mois</button>
+    </div>
+    <p style="text-align:center;font-size:.74rem;color:var(--ink-faint);margin-top:10px;">🔒 Paiement sécurisé · Remboursement sous 7 jours</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <p style="margin-bottom:6px;color:rgba(255,255,255,.8);font-weight:600;">ResumeCV AI Pro</p>
+  <p>© 2026 · <a href="#" onclick="openMentions();return false;">Mentions légales</a> · <a href="#" onclick="openCGV();return false;">CGV</a> · <a href="mailto:aipro.contact@proton.me">Contact : aipro.contact@proton.me</a></p>
+</footer>
+
+<!-- MODAL MENTIONS LÉGALES -->
+<div class="modal-overlay" id="mentionsModal" style="z-index:400;">
+  <div class="modal" style="position:relative;max-height:80vh;overflow-y:auto;max-width:560px;">
+    <button class="modal-close" onclick="closeMentions()">✕</button>
+    <h2 style="margin-bottom:16px;">Mentions légales</h2>
+    <div style="font-size:.84rem;color:var(--ink-muted);line-height:1.7;">
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Éditeur du site</strong><br>
+      ResumeCV AI Pro est un service édité à titre personnel.<br>
+      Contact : <a href="mailto:aipro.contact@proton.me" style="color:var(--blue);">aipro.contact@proton.me</a></p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Hébergement</strong><br>
+      Le site est hébergé par Netlify, Inc.<br>
+      44 Montgomery Street, Suite 300, San Francisco, CA 94104, USA.</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Propriété intellectuelle</strong><br>
+      L'ensemble des contenus présents sur ce site (textes, visuels, code) sont la propriété exclusive de ResumeCV AI Pro. Toute reproduction partielle ou totale est interdite sans autorisation préalable.</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Données personnelles</strong><br>
+      Les données saisies dans le formulaire (nom, expériences, compétences) sont utilisées uniquement pour générer le CV demandé. Elles ne sont pas stockées sur nos serveurs et ne sont pas revendues à des tiers. Le traitement est effectué via l'API Anthropic (Claude) conformément à leur politique de confidentialité.</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Paiement</strong><br>
+      Les paiements sont traités par Stripe, Inc. ResumeCV AI Pro ne stocke aucune donnée bancaire.</p>
+
+      <p><strong style="color:var(--ink);">Responsabilité</strong><br>
+      ResumeCV AI Pro met tout en œuvre pour fournir un service de qualité. Les CV générés sont fournis à titre indicatif. L'utilisateur reste responsable du contenu final de son CV.</p>
+    </div>
+    <button class="btn-plan btn-plan-primary" style="margin-top:20px;padding:10px;" onclick="closeMentions()">Fermer</button>
+  </div>
+</div>
+
+<!-- MODAL CGV -->
+<div class="modal-overlay" id="cgvModal" style="z-index:400;">
+  <div class="modal" style="position:relative;max-height:80vh;overflow-y:auto;max-width:560px;">
+    <button class="modal-close" onclick="closeCGV()">✕</button>
+    <h2 style="margin-bottom:16px;">Conditions Générales de Vente</h2>
+    <div style="font-size:.84rem;color:var(--ink-muted);line-height:1.7;">
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Article 1 — Objet</strong><br>
+      Les présentes CGV régissent les ventes de services de génération de CV optimisés ATS proposés par ResumeCV AI Pro via le site.</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Article 2 — Prix</strong><br>
+      Les tarifs sont indiqués en euros TTC. ResumeCV AI Pro propose deux offres :<br>
+      — À l'unité : 2,99 € par CV généré<br>
+      — Abonnement mensuel : 7,99 € par mois, sans engagement, résiliable à tout moment</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Article 3 — Paiement</strong><br>
+      Le paiement est effectué en ligne via Stripe (carte bancaire, Apple Pay, Google Pay). La transaction est sécurisée par chiffrement SSL.</p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Article 4 — Droit de rétractation</strong><br>
+      Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux contenus numériques fournis immédiatement après achat. Toutefois, ResumeCV AI Pro offre un remboursement intégral sous 7 jours si le service ne vous donne pas satisfaction. Demande à adresser à : <a href="mailto:aipro.contact@proton.me" style="color:var(--blue);">aipro.contact@proton.me</a></p>
+
+      <p style="margin-bottom:12px;"><strong style="color:var(--ink);">Article 5 — Résiliation abonnement</strong><br>
+      L'abonnement mensuel est sans engagement. Il peut être résilié à tout moment depuis votre espace client Stripe ou en contactant aipro.contact@proton.me. La résiliation prend effet à la fin de la période en cours.</p>
+
+      <p><strong style="color:var(--ink);">Article 6 — Litiges</strong><br>
+      En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux français seront compétents.</p>
+    </div>
+    <button class="btn-plan btn-plan-primary" style="margin-top:20px;padding:10px;" onclick="closeCGV()">Fermer</button>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE INIT ──
+const SUPABASE_URL = 'https://ltndkrqdxvglslyipvrg.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0bmRrcnFkeHZnbHNseWlwdnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMjQzMTYsImV4cCI6MjEwNjYwMDMxNn0.p96TAxIcIZLe560p1isO6mZps1l1zLVsDJbFbEwQ8IM';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── STRIPE PAYMENT LINKS ──
+const STRIPE_LINK_UNIT = 'https://buy.stripe.com/5kQ5kw9q84Sp7k25UD0Ba00';
+const STRIPE_LINK_MONTHLY = 'https://buy.stripe.com/14A28k6dW3OldIqbeX0Ba01';
+
+let currentUser = null;
+let userPlan = 'free'; // 'free' | 'unit' | 'monthly'
+
+// ── AUTH MODAL ──
+function openAuthModal(tab) {
+  document.getElementById('authModal').classList.add('active');
+  switchAuthTab(tab || 'login');
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('active');
+}
+function switchAuthTab(tab) {
+  document.getElementById('auth-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+// ── INSCRIPTION ──
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const pwd = document.getElementById('signup-pwd').value;
+  const pwd2 = document.getElementById('signup-pwd2').value;
+  if (!email || !email.includes('@')) { showToast('⚠️ Email invalide'); return; }
+  if (pwd.length < 6) { showToast('⚠️ Mot de passe trop court (min 6 caractères)'); return; }
+  if (pwd !== pwd2) { showToast('⚠️ Les mots de passe ne correspondent pas'); return; }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Création…';
+
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: pwd,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
+    btn.disabled = false; btn.textContent = 'Créer mon compte';
+
+    if (error) {
+      console.error('Signup error:', error);
+      showToast('❌ ' + error.message);
+      return;
+    }
+
+    // Supabase retourne data.user même sans confirmation email
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      showToast('⚠️ Cet email est déjà utilisé. Essayez de vous connecter.');
+      return;
+    }
+
+    showToast('✅ Compte créé ! Vérifiez votre email pour confirmer.');
+    closeAuthModal();
+  } catch (err) {
+    console.error('Signup exception:', err);
+    btn.disabled = false; btn.textContent = 'Créer mon compte';
+    showToast('❌ Erreur réseau. Réessayez.');
+  }
+}
+
+// ── CONNEXION ──
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  if (!email || !pwd) { showToast('⚠️ Remplissez tous les champs'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  btn.disabled = false; btn.textContent = 'Se connecter';
+
+  if (error) { showToast('❌ Email ou mot de passe incorrect'); return; }
+  closeAuthModal();
+  await onUserLoggedIn(data.user);
+}
+
+// ── RESET MDP ──
+async function resetPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showToast('⚠️ Entrez votre email d\'abord'); return; }
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  showToast('📧 Email de réinitialisation envoyé !');
+}
+
+// ── DÉCONNEXION ──
+async function handleLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  userPlan = 'free';
+  updateNavUI(null);
+  showToast('👋 Déconnecté');
+}
+
+// ── APRÈS LOGIN ──
+async function onUserLoggedIn(user) {
+  currentUser = user;
+  // Vérifie le plan dans la table subscribers
+  await checkUserPlan(user);
+  updateNavUI(user);
+
+  // Restaurer le CV sauvegardé (retour de Stripe)
+  const hadSavedCV = restoreSavedCV();
+
+  // Toast de bienvenue (pas si on revient de Stripe, car restoreSavedCV montre son propre toast)
+  if (!hadSavedCV) {
+    showToast('👋 Bienvenue ' + user.email.split('@')[0] + ' !');
+  }
+}
+
+async function checkUserPlan(user, retryCount) {
+  retryCount = retryCount || 0;
+  const { data } = await sb.from('subscribers').select('plan, subscribed_until').eq('id', user.id).single();
+  if (data) {
+    const now = new Date();
+    const until = data.subscribed_until ? new Date(data.subscribed_until) : null;
+    if (data.plan === 'monthly' && until && until > now) {
+      userPlan = 'monthly';
+    } else if (data.plan === 'unit') {
+      userPlan = 'unit';
+    } else {
+      userPlan = 'free';
+    }
+  } else {
+    userPlan = 'free';
+  }
+
+  // Si on a un CV sauvegardé mais plan=free, le webhook n'a peut-être pas encore écrit
+  // On réessaie 2 fois avec un délai de 3s
+  const savedCV = localStorage.getItem('resumecv_saved_cv');
+  if (savedCV && userPlan === 'free' && retryCount < 2) {
+    await new Promise(r => setTimeout(r, 3000));
+    return checkUserPlan(user, retryCount + 1);
+  }
+}
+
+function restoreSavedCV() {
+  const savedData = localStorage.getItem('resumecv_saved_cv');
+  if (!savedData) return false;
+
+  try {
+    const saved = JSON.parse(savedData);
+
+    // Restaurer le CV dans la preview
+    if (saved.cvHtml) {
+      document.getElementById('cvPreview').innerHTML = saved.cvHtml;
+      document.getElementById('atsScore').textContent = saved.atsScore || '—';
+      if (saved.keywords) {
+        document.getElementById('keywordsList').innerHTML = saved.keywords;
+        document.getElementById('keywordsSection').style.display = 'block';
+      }
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('outputContent').classList.add('active');
+
+      // Déverrouiller si le paiement a été enregistré
+      const outputEl = document.getElementById('outputContent');
+      if (userPlan === 'monthly' || userPlan === 'unit') {
+        outputEl.classList.remove('cv-locked');
+        showToast('✅ Paiement reçu ! Votre CV est débloqué.');
+        // Nettoyer le localStorage
+        localStorage.removeItem('resumecv_saved_cv');
+      } else {
+        outputEl.classList.add('cv-locked');
+        showToast('⏳ Paiement en cours de traitement, rechargez la page dans quelques secondes…');
+      }
+
+      // Mettre à jour l'UI lettre de motivation
+      updateCoverLetterUI();
+    }
+    return true;
+  } catch (e) {
+    console.error('Erreur restauration CV:', e);
+    return false;
+  }
+}
+
+// ── MISE À JOUR NAV ──
+function updateNavUI(user) {
+  const nav = document.getElementById('navRight');
+  if (!user) {
+    nav.innerHTML = `
+      <button class="btn-ghost" onclick="scrollToApp()">Essayer gratuitement</button>
+      <button class="btn-primary" onclick="openAuthModal('signup')">Créer un compte</button>
+      <button class="btn-ghost" onclick="openAuthModal('login')">Se connecter</button>`;
+  } else {
+    const initials = user.email.slice(0,2).toUpperCase();
+    const planLabel = userPlan === 'monthly'
+      ? '<span class="plan-badge-user">Abonné ✓</span>'
+      : userPlan === 'unit'
+      ? '<span class="plan-badge-user">CV débloqué ✓</span>'
+      : '<span class="plan-badge-free">Gratuit</span>';
+    nav.innerHTML = `
+      <div class="user-bar">
+        <div class="user-avatar" title="${user.email}">${initials}</div>
+        <span class="user-email">${user.email}</span>
+        ${planLabel}
+        <button class="btn-logout" onclick="handleLogout()">Déconnexion</button>
+      </div>`;
+  }
+}
+
+// ── VÉRIF ACCÈS OUTIL ──
+// L'outil est libre d'accès — pas besoin de compte pour générer
+// Le compte est requis uniquement pour le forfait mensuel 7,99€
+function checkAccess() {
+  return true; // accès libre pour tout le monde
+}
+
+function checkMonthlyAccess() {
+  if (!currentUser || userPlan !== 'monthly') {
+    showToast('⚠️ Cette fonction est réservée aux abonnés 7,99€/mois');
+    openAuthModal('login');
+    return false;
+  }
+  return true;
+}
+
+// ── INIT AU CHARGEMENT ──
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) await onUserLoggedIn(session.user);
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      await onUserLoggedIn(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null; userPlan = 'free';
+      updateNavUI(null);
+    }
+  });
+}
+initAuth();
+
+const MESSAGES_LOADING = [
+  "Analyse de votre profil…",
+  "Optimisation des mots-clés ATS…",
+  "Reformulation de vos expériences…",
+  "Calcul du score ATS…",
+  "Finalisation de votre CV…"
+];
+
+function scrollToApp() {
+  document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+}
+
+function openModal() {
+  document.getElementById('paymentModal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('paymentModal').classList.remove('active');
+}
+
+document.getElementById('paymentModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function openMentions() { document.getElementById('mentionsModal').classList.add('active'); }
+function closeMentions() { document.getElementById('mentionsModal').classList.remove('active'); }
+function openCGV() { document.getElementById('cgvModal').classList.add('active'); }
+function closeCGV() { document.getElementById('cgvModal').classList.remove('active'); }
+document.addEventListener('click', function(e) {
+  if (e.target === document.getElementById('mentionsModal')) closeMentions();
+  if (e.target === document.getElementById('cgvModal')) closeCGV();
+});
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Si abonné mensuel → télécharge directement sans payer
+// Si non abonné → ouvre le modal de paiement 2,99€
+let pendingFormat = 'pdf';
+
+function handleDownloadClick(format) {
+  pendingFormat = format || 'pdf';
+  if (currentUser && (userPlan === 'monthly' || userPlan === 'unit')) {
+    // A payé (unit ou abonné) : téléchargement direct
+    if (pendingFormat === 'doc') {
+      downloadCVDoc();
+    } else {
+      downloadCVPdf();
+    }
+  } else {
+    // Non payé : modal paiement 2,99€
+    openModal();
+  }
+}
+
+function downloadCVPdf() {
+  const el = document.getElementById('cvPreview');
+  showToast('⏳ Génération du PDF…');
+  const opt = {
+    margin:       [10, 10, 10, 10],
+    filename:     'CV-optimise-ATS.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save().then(() => {
+    showToast('✅ CV téléchargé en PDF !');
+  }).catch(() => {
+    showToast('❌ Erreur lors de la génération du PDF');
+  });
+}
+
+function downloadCVDoc() {
+  const cvHtml = document.getElementById('cvPreview').innerHTML;
+  const docContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.5; margin: 2cm; }
+        h2 { font-size: 16pt; font-weight: bold; border-bottom: 2px solid #2563EB; padding-bottom: 4px; margin-bottom: 10px; }
+        h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 10px 0 4px; }
+        p { margin-bottom: 6px; }
+        ul { padding-left: 18px; }
+        li { margin-bottom: 3px; }
+        .cv-section-title { font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #666; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 12px 0 6px; }
+        .job-title { font-weight: bold; }
+        .job-meta { font-size: 9pt; color: #888; }
+        .cv-contact span { margin-right: 8px; color: #555; font-size: 9pt; }
+      </style>
+    </head>
+    <body>${cvHtml}</body>
+    </html>`;
+  const blob = new Blob([docContent], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'CV-optimise-ATS.doc';
+  a.click();
+  showToast('✅ CV téléchargé en DOC !');
+}
+
+function processPayment() {
+  // Vérifier que l'utilisateur est connecté (on a besoin de son ID pour Stripe)
+  if (!currentUser) {
+    showToast('⚠️ Créez un compte d\'abord pour débloquer votre CV');
+    closeModal();
+    openAuthModal('signup');
+    return;
+  }
+
+  // Sauvegarder le CV dans localStorage avant de quitter la page
+  const cvPreview = document.getElementById('cvPreview').innerHTML;
+  const atsScore = document.getElementById('atsScore').textContent;
+  const keywords = document.getElementById('keywordsList').innerHTML;
+  const formData = {
+    name: document.getElementById('name')?.value || '',
+    targetJob: document.getElementById('target-job')?.value || '',
+    contact: document.getElementById('contact')?.value || ''
+  };
+  if (cvPreview) {
+    localStorage.setItem('resumecv_saved_cv', JSON.stringify({
+      cvHtml: cvPreview,
+      atsScore: atsScore,
+      keywords: keywords,
+      format: pendingFormat,
+      formData: formData
+    }));
+  }
+
+  closeModal();
+  const url = STRIPE_LINK_UNIT
+    + '?client_reference_id=' + currentUser.id
+    + '&prefilled_email=' + encodeURIComponent(currentUser.email);
+  window.location.href = url;
+}
+
+// ── ABONNEMENT MENSUEL ──
+function subscribeMonthly() {
+  if (!currentUser) {
+    showToast('⚠️ Créez un compte d\'abord pour profiter de l\'abonnement');
+    openAuthModal('signup');
+    return;
+  }
+
+  // Sauvegarder le CV dans localStorage avant de quitter la page
+  const cvPreview = document.getElementById('cvPreview').innerHTML;
+  const atsScore = document.getElementById('atsScore').textContent;
+  const keywords = document.getElementById('keywordsList').innerHTML;
+  const formData = {
+    name: document.getElementById('name')?.value || '',
+    targetJob: document.getElementById('target-job')?.value || '',
+    contact: document.getElementById('contact')?.value || ''
+  };
+  if (cvPreview) {
+    localStorage.setItem('resumecv_saved_cv', JSON.stringify({
+      cvHtml: cvPreview,
+      atsScore: atsScore,
+      keywords: keywords,
+      format: pendingFormat,
+      formData: formData
+    }));
+  }
+
+  const url = STRIPE_LINK_MONTHLY
+    + '?client_reference_id=' + currentUser.id
+    + '&prefilled_email=' + encodeURIComponent(currentUser.email);
+  window.location.href = url;
+}
+
+async function generateCV() {
+  if (!checkAccess()) return;
+  const name = document.getElementById('name').value.trim();
+  const targetJob = document.getElementById('target-job').value.trim();
+  const contact = document.getElementById('contact').value.trim();
+  const experience = document.getElementById('experience').value.trim();
+  const skills = document.getElementById('skills').value.trim();
+  const education = document.getElementById('education').value.trim();
+  const jobOffer = document.getElementById('job-offer').value.trim();
+
+  if (!name || !experience) {
+    showToast('⚠️ Remplissez au moins votre nom et vos expériences.');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('outputContent').classList.remove('active');
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('active');
+  document.getElementById('generateBtn').disabled = true;
+
+  let msgIdx = 0;
+  const loadingInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % MESSAGES_LOADING.length;
+    document.getElementById('loadingText').textContent = MESSAGES_LOADING[msgIdx];
+  }, 1200);
+
+  // Construire le texte manuel à partir des champs du formulaire
+  const manualText = `Nom: ${name}
+Poste visé: ${targetJob || 'Non précisé'}
+Contact: ${contact || 'Non précisé'}
+Expériences: ${experience}
+Compétences: ${skills || 'Non précisé'}
+Formation: ${education || 'Non précisé'}`;
+
+  try {
+    const response = await fetch("/.netlify/functions/convert-cv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        manualText: manualText,
+        targetJob: targetJob,
+        jobOffer: jobOffer
+      })
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message || data.error || 'Erreur serveur');
+    const cv = data.cv;
+    renderCV(cv, cv.name || name, cv.targetJob || targetJob, cv.contact || contact);
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  } finally {
+    clearInterval(loadingInterval);
+    overlay.classList.remove('active');
+    document.getElementById('generateBtn').disabled = false;
+  }
+}
+
+function renderCV(cv, name, targetJob, contact) {
+  document.getElementById('atsScore').textContent = (cv.atsScore || 82) + '/100';
+  const scoreEl = document.getElementById('atsScore');
+  const score = cv.atsScore || 82;
+  scoreEl.style.color = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+
+  let html = `
+    <h2>${name || 'Votre Nom'}</h2>
+    ${targetJob ? `<p style="font-weight:600;color:var(--blue);font-size:.88rem;margin-bottom:6px;">${targetJob}</p>` : ''}
+    <div class="cv-contact">${(contact || 'email@exemple.com').split('·').map(c => `<span>${c.trim()}</span>`).join(' · ')}</div>
+  `;
+
+  if (cv.summary) {
+    html += `<div class="cv-section"><div class="cv-section-title">Profil</div><p>${cv.summary}</p></div>`;
+  }
+
+  if (cv.experience && cv.experience.length > 0) {
+    html += `<div class="cv-section"><div class="cv-section-title">Expériences</div>`;
+    cv.experience.forEach(exp => {
+      html += `<div class="job">
+        <div class="job-title">${exp.title} — ${exp.company}</div>
+        <div class="job-meta">${exp.period}</div>
+        <ul>${(exp.bullets||[]).map(b => `<li>${b}</li>`).join('')}</ul>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (cv.skills && cv.skills.length > 0) {
+    html += `<div class="cv-section"><div class="cv-section-title">Compétences</div><p>${cv.skills.join(' · ')}</p></div>`;
+  }
+
+  if (cv.education) {
+    html += `<div class="cv-section"><div class="cv-section-title">Formation</div><p>${cv.education}</p></div>`;
+  }
+
+  document.getElementById('cvPreview').innerHTML = html;
+
+  if (cv.keywords && cv.keywords.length > 0) {
+    document.getElementById('keywordsList').innerHTML = cv.keywords.map(kw => `<span class="kw">${kw}</span>`).join('');
+    document.getElementById('keywordsSection').style.display = 'block';
+  }
+
+  document.getElementById('outputContent').classList.add('active');
+
+  // Verrouiller le CV si l'utilisateur n'a pas payé (unit ou monthly)
+  const outputEl = document.getElementById('outputContent');
+  if (currentUser && (userPlan === 'monthly' || userPlan === 'unit')) {
+    outputEl.classList.remove('cv-locked');
+    // Mettre à jour les boutons : plus besoin d'afficher le prix
+    document.getElementById('dlBtnPdf').textContent = '⬇ Télécharger PDF';
+    document.getElementById('dlBtnDoc').textContent = '⬇ Télécharger DOC';
+  } else {
+    outputEl.classList.add('cv-locked');
+    document.getElementById('dlBtnPdf').textContent = '⬇ PDF — 2,99€';
+    document.getElementById('dlBtnDoc').textContent = '⬇ DOC — 2,99€';
+  }
+
+  // Afficher/masquer la section lettre de motivation selon le plan
+  updateCoverLetterUI();
+}
+
+// Bloquer clic droit sur le CV
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.closest('.cv-preview') || e.target.closest('#keywordsSection')) {
+    e.preventDefault();
+  }
+});
+
+// copyCV supprimé — le contenu est payant
+
+// ── LETTRE DE MOTIVATION ──
+let lastCoverLetter = '';
+
+function updateCoverLetterUI() {
+  const lockedMsg = document.getElementById('clLockedMsg');
+  const unlocked = document.getElementById('clUnlocked');
+  const badge = document.getElementById('clBadge');
+
+  if (currentUser && userPlan === 'monthly') {
+    lockedMsg.style.display = 'none';
+    unlocked.style.display = 'block';
+    badge.style.display = 'inline';
+  } else {
+    lockedMsg.style.display = 'block';
+    unlocked.style.display = 'none';
+    badge.style.display = 'none';
+  }
+}
+
+async function generateCoverLetter() {
+  // Récupérer le texte du CV affiché
+  const cvPreviewEl = document.getElementById('cvPreview');
+  const cvText = cvPreviewEl ? cvPreviewEl.innerText : '';
+
+  if (!cvText || cvText.length < 30) {
+    showToast('⚠️ Générez d\'abord votre CV avant de demander une lettre.');
+    return;
+  }
+
+  // Récupérer l'offre d'emploi (du formulaire ou de l'upload)
+  let jobOffer = document.getElementById('job-offer').value.trim();
+  if (!jobOffer) jobOffer = document.getElementById('upload-job-offer').value.trim();
+
+  if (!jobOffer || jobOffer.length < 20) {
+    showToast('⚠️ Collez l\'offre d\'emploi dans le formulaire pour générer une lettre adaptée.');
+    return;
+  }
+
+  // Récupérer le nom et poste
+  let userName = document.getElementById('name').value.trim();
+  let targetJob = document.getElementById('target-job').value.trim();
+  if (!targetJob) targetJob = document.getElementById('upload-target-job').value.trim();
+
+  // Token d'authentification
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    showToast('⚠️ Reconnectez-vous pour utiliser cette fonctionnalité.');
+    return;
+  }
+
+  const btn = document.getElementById('generateClBtn');
+  const loading = document.getElementById('clLoading');
+  const result = document.getElementById('clResult');
+
+  btn.disabled = true;
+  btn.style.display = 'none';
+  loading.classList.add('active');
+  result.classList.remove('active');
+
+  const clMessages = [
+    'Analyse de votre profil et de l\'offre…',
+    'Identification des compétences clés…',
+    'Rédaction de votre lettre…',
+    'Personnalisation du contenu…',
+    'Finalisation…'
+  ];
+  let msgIdx = 0;
+  document.getElementById('clLoadingText').textContent = clMessages[0];
+  const interval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % clMessages.length;
+    document.getElementById('clLoadingText').textContent = clMessages[msgIdx];
+  }, 1500);
+
+  try {
+    const response = await fetch('/.netlify/functions/generate-cover-letter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify({
+        cvText: cvText,
+        jobOffer: jobOffer,
+        targetJob: targetJob,
+        userName: userName
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || data.error || 'Erreur serveur');
+    }
+
+    const letter = data.letter;
+    lastCoverLetter = letter.coverLetter || '';
+
+    // Afficher le résultat
+    document.getElementById('clCompany').textContent = (letter.jobTitle || targetJob || 'Poste visé') + ' — ' + (letter.companyName || '');
+    document.getElementById('clPreview').textContent = letter.coverLetter;
+
+    if (letter.keyMatches && letter.keyMatches.length > 0) {
+      document.getElementById('clMatches').innerHTML = letter.keyMatches.map(m => `<span class="cl-match">✓ ${m}</span>`).join('');
+    }
+
+    result.classList.add('active');
+    showToast('✅ Lettre de motivation générée !');
+
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    clearInterval(interval);
+    loading.classList.remove('active');
+    btn.style.display = 'block';
+    btn.disabled = false;
+  }
+}
+
+function copyCoverLetter() {
+  if (!lastCoverLetter) return;
+  navigator.clipboard.writeText(lastCoverLetter).then(() => {
+    showToast('📋 Lettre copiée !');
+  }).catch(() => {
+    showToast('❌ Impossible de copier');
+  });
+}
+
+function downloadCoverLetterPdf() {
+  if (!lastCoverLetter) return;
+  const el = document.getElementById('clPreview');
+  showToast('⏳ Génération du PDF…');
+  const opt = {
+    margin:       [15, 15, 15, 15],
+    filename:     'Lettre-de-motivation.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save().then(() => {
+    showToast('✅ Lettre téléchargée en PDF !');
+  }).catch(() => {
+    showToast('❌ Erreur lors de la génération du PDF');
+  });
+}
+
+function downloadCoverLetterDoc() {
+  if (!lastCoverLetter) return;
+  const paragraphs = lastCoverLetter.split('\n').map(line => {
+    if (line.trim() === '') return '<p>&nbsp;</p>';
+    return '<p>' + line + '</p>';
+  }).join('');
+  const docContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.6; margin: 2.5cm; }
+        p { margin-bottom: 6px; }
+      </style>
+    </head>
+    <body>${paragraphs}</body>
+    </html>`;
+  const blob = new Blob([docContent], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Lettre-de-motivation.doc';
+  a.click();
+  showToast('✅ Lettre téléchargée en DOC !');
+}
+
+// ── MODE SWITCH ──
+function switchMode(mode) {
+  document.getElementById('tab-form').classList.toggle('active', mode === 'form');
+  document.getElementById('tab-upload').classList.toggle('active', mode === 'upload');
+  document.getElementById('form-section').style.display = mode === 'form' ? 'block' : 'none';
+  document.getElementById('upload-section').style.display = mode === 'upload' ? 'block' : 'none';
+}
+
+// ── FILE UPLOAD ──
+let uploadedFileBase64 = '';
+let uploadedFileType = '';
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) { showToast('⚠️ Fichier trop lourd (max 5 Mo)'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Convertir le ArrayBuffer en base64
+    const arrayBuffer = e.target.result;
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    uploadedFileBase64 = btoa(binary);
+    uploadedFileType = file.type || 'application/octet-stream';
+    document.getElementById('uploadSuccess').classList.add('on');
+    document.getElementById('uploadFilename').textContent = `✅ ${file.name} chargé`;
+    showToast('✅ Fichier chargé avec succès');
+  };
+  // Lire TOUS les fichiers en ArrayBuffer (PDF, DOCX, TXT...)
+  reader.readAsArrayBuffer(file);
+}
+
+// ── CONVERT CV (appel vers la Netlify Function) ──
+async function convertCV() {
+  if (!checkAccess()) return;
+  const targetJob = document.getElementById('upload-target-job').value.trim();
+  const jobOffer = document.getElementById('upload-job-offer').value.trim();
+
+  if (!uploadedFileBase64 && !targetJob) {
+    showToast('⚠️ Uploadez votre CV et indiquez le poste visé');
+    return;
+  }
+  if (!uploadedFileBase64) {
+    showToast('⚠️ Uploadez d\'abord votre CV');
+    return;
+  }
+
+  document.getElementById('convertBtn').disabled = true;
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('outputContent').classList.remove('active');
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('active');
+
+  let msgIdx = 0;
+  const msgs = ['Lecture de votre CV…', 'Analyse de la structure…', 'Optimisation ATS…', 'Reformulation des expériences…', 'Calcul du score…'];
+  document.getElementById('loadingText').textContent = msgs[0];
+  const interval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % msgs.length;
+    document.getElementById('loadingText').textContent = msgs[msgIdx];
+  }, 1200);
+
+  try {
+    const response = await fetch("/.netlify/functions/convert-cv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileBase64: uploadedFileBase64,
+        fileType: uploadedFileType,
+        targetJob: targetJob,
+        jobOffer: jobOffer
+      })
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message || data.error || 'Erreur serveur');
+    const cv = data.cv;
+    renderCV(cv, cv.name, cv.targetJob, cv.contact);
+    showToast('✅ CV converti en format ATS !');
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  } finally {
+    clearInterval(interval);
+    overlay.classList.remove('active');
+    document.getElementById('convertBtn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>

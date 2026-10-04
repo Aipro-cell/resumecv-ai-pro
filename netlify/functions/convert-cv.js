@@ -141,15 +141,25 @@ Règles pour "suggestions" :
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2500,
+      max_tokens: 4000,
       messages: [{ role: 'user', content: prompt }]
     });
 
-    const raw = message.content[0].text;
+    let raw = message.content[0].text;
+    // Nettoyer les caractères de contrôle qui cassent JSON.parse
+    raw = raw.replace(/[\x00-\x1F\x7F]/g, function(c) { return c === '\n' || c === '\r' || c === '\t' ? c : ''; });
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Réponse Claude invalide');
 
-    const cvData = JSON.parse(jsonMatch[0]);
+    let cvData;
+    try {
+      cvData = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('JSON brut reçu:', jsonMatch[0].slice(0, 500));
+      // Tentative de réparation : supprimer les virgules traînantes
+      let fixed = jsonMatch[0].replace(/,\s*([\]}])/g, '$1');
+      cvData = JSON.parse(fixed);
+    }
 
     return {
       statusCode: 200,

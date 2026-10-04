@@ -74,74 +74,23 @@ exports.handler = async function(event, context) {
 
     const client = new Anthropic({ apiKey });
 
-    const prompt = `Tu es un expert en optimisation de CV pour les systèmes ATS (Applicant Tracking Systems) utilisés par les recruteurs RH.
+    const prompt = `Expert ATS. Analyse ce CV et reformate-le en version optimisée ATS.
 
-Voici le contenu brut extrait d'un CV :
+CV brut :
 ---
-${cvText.slice(0, 4000)}
+${cvText.slice(0, 3000)}
 ---
-${targetJob ? `Poste visé par l'utilisateur : ${targetJob}` : ''}
-${jobOffer ? `Offre d'emploi cible : ${jobOffer.slice(0, 800)}` : ''}
+${targetJob ? `Poste visé : ${targetJob}` : ''}
+${jobOffer ? `Offre : ${jobOffer.slice(0, 500)}` : ''}
 
-Ton travail : analyser ce CV, extraire toutes les informations, et le reformater entièrement en version optimisée ATS.
+Réponds UNIQUEMENT en JSON valide :
+{"atsScore":87,"atsDetails":{"keywords":{"score":85,"label":"Bon"},"format":{"score":92,"label":"Excellent"},"readability":{"score":88,"label":"Optimal"},"length":{"score":72,"label":"À ajuster"}},"suggestions":[{"icon":"💡","title":"Titre","text":"Conseil concret"},{"icon":"🔑","title":"Titre","text":"Conseil"},{"icon":"📊","title":"Titre","text":"Conseil"}],"name":"Prénom Nom","targetJob":"Poste","contact":"email · tel · ville","summary":"Résumé pro 2-3 phrases","experience":[{"title":"Poste","company":"Entreprise","period":"2020–2024","bullets":["Réalisation quantifiée","Responsabilité clé"]}],"skills":["comp1","comp2","comp3","comp4","comp5","comp6"],"education":"Diplôme, École, Année","keywords":["mot-clé1","mot-clé2","mot-clé3","mot-clé4","mot-clé5","mot-clé6"]}
 
-Règles ATS obligatoires :
-- Structure simple : pas de tableaux ni colonnes multiples
-- Résumé professionnel percutant en introduction (2-3 phrases)
-- Expériences en ordre chronologique inverse avec bullet points quantifiés
-- Mots-clés du secteur naturellement intégrés
-- Section compétences claire et lisible
-
-Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après :
-{
-  "atsScore": 87,
-  "atsDetails": {
-    "keywords": {"score": 85, "label": "Bon"},
-    "format": {"score": 92, "label": "Excellent"},
-    "readability": {"score": 88, "label": "Optimal"},
-    "length": {"score": 72, "label": "À ajuster"}
-  },
-  "suggestions": [
-    {"icon": "💡", "title": "Titre court de la suggestion", "text": "Explication concrète et actionnable basée sur le CV réel du candidat"},
-    {"icon": "🔑", "title": "Autre suggestion", "text": "Autre explication concrète"},
-    {"icon": "✂️", "title": "Troisième suggestion", "text": "Troisième explication"}
-  ],
-  "name": "Prénom Nom extrait du CV",
-  "targetJob": "Titre du poste extrait ou visé",
-  "contact": "email · téléphone · ville extraits",
-  "summary": "Résumé professionnel optimisé ATS, 2-3 phrases percutantes basées sur le vrai parcours",
-  "experience": [
-    {
-      "title": "Titre exact du poste",
-      "company": "Nom de l'entreprise",
-      "period": "2020 – 2024",
-      "bullets": [
-        "Accomplissement concret quantifié (chiffres réels du CV)",
-        "Responsabilité clé avec impact mesurable",
-        "Projet ou initiative avec résultat"
-      ]
-    }
-  ],
-  "skills": ["compétence1", "compétence2", "compétence3", "compétence4", "compétence5", "compétence6"],
-  "education": "Diplôme, École, Année",
-  "keywords": ["mot-clé ATS 1", "mot-clé ATS 2", "mot-clé ATS 3", "mot-clé ATS 4", "mot-clé ATS 5", "mot-clé ATS 6", "mot-clé ATS 7", "mot-clé ATS 8"]
-}
-
-Règles pour "atsDetails" :
-- "keywords" : note de 0-100 pour la correspondance des mots-clés du secteur. Label : "Excellent" (80+), "Bon" (60-79), "À améliorer" (<60)
-- "format" : note de 0-100 pour la compatibilité du format (pas de tableaux, colonnes simples, sections claires). Label : "Compatible" (80+), "Acceptable" (60-79), "Problématique" (<60)
-- "readability" : note de 0-100 pour la clarté et la lisibilité. Label : "Optimal" (80+), "Correct" (60-79), "À revoir" (<60)
-- "length" : note de 0-100 pour la longueur appropriée (1-2 pages). Label : "Idéal" (80+), "Acceptable" (60-79), "À ajuster" (<60)
-
-Règles pour "suggestions" :
-- Exactement 3 suggestions concrètes et actionnables
-- Basées sur le VRAI contenu du CV, pas génériques
-- Chaque suggestion doit expliquer QUOI changer et COMMENT
-- Icônes possibles : 💡 (amélioration), 🔑 (mots-clés), ✂️ (raccourcir), 📊 (chiffres), 🎯 (ciblage)`;
+Labels atsDetails : score>=80 "Excellent"/"Compatible"/"Optimal"/"Idéal", 60-79 "Bon"/"Acceptable"/"Correct"/"Acceptable", <60 "À améliorer"/"Problématique"/"À revoir"/"À ajuster". 3 suggestions concrètes basées sur le vrai CV.`;
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      model: 'claude-haiku-4-5',
+      max_tokens: 2500,
       messages: [{ role: 'user', content: prompt }]
     });
 

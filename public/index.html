@@ -441,35 +441,35 @@ footer a { color: rgba(255,255,255,.6); text-decoration: none; }
   gap: 10px;
 }
 .ats-cat {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
   background: var(--bg);
 }
-.ats-cat-info {
+.ats-cat-top {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 .ats-cat-name {
-  font-size: .76rem;
-  font-weight: 600;
+  font-size: .72rem;
+  font-weight: 700;
   color: var(--ink-muted);
   text-transform: uppercase;
   letter-spacing: .04em;
 }
-.ats-cat-score {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--ink);
-}
 .ats-cat-tag {
-  font-size: .68rem;
+  font-size: .65rem;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 9px;
   border-radius: 100px;
+  white-space: nowrap;
+}
+.ats-cat-desc {
+  font-size: .78rem;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 6px;
 }
 .ats-cat-tag.excellent { background: #DCFCE7; color: #16A34A; }
 .ats-cat-tag.bon { background: #DBEAFE; color: #2563EB; }
@@ -495,29 +495,29 @@ footer a { color: rgba(255,255,255,.6); text-decoration: none; }
 }
 .suggestion-item {
   display: flex;
-  gap: 12px;
-  padding: 12px;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
   border-radius: 10px;
   background: var(--bg);
   margin-bottom: 8px;
 }
 .suggestion-item:last-child { margin-bottom: 0; }
 .suggestion-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
-  margin-top: 1px;
+  line-height: 1.4;
 }
-.suggestion-item strong {
-  display: block;
+.suggestion-item .suggestion-title {
   font-size: .82rem;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 3px;
+  margin: 0 0 3px;
 }
-.suggestion-item p {
+.suggestion-item .suggestion-text {
   font-size: .78rem;
   color: var(--ink-muted);
-  line-height: 1.45;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -1636,13 +1636,13 @@ function renderCV(cv, name, targetJob, contact) {
       if (cat) {
         const tagClass = cat.score >= 80 ? 'excellent' : cat.score >= 60 ? 'bon' : cat.score >= 40 ? 'moyen' : 'faible';
         catHtml += `<div class="ats-cat">
-          <div class="ats-cat-name">${info.name}</div>
-          <div class="ats-cat-desc">${info.desc}</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
-              <div style="height:100%;width:${cat.score}%;background:${cat.score >= 80 ? 'var(--green)' : cat.score >= 60 ? 'var(--blue)' : cat.score >= 40 ? '#e6a817' : 'var(--red)'};border-radius:3px;"></div>
-            </div>
+          <div class="ats-cat-top">
+            <span class="ats-cat-name">${info.name}</span>
             <span class="ats-cat-tag ${tagClass}">${cat.label || cat.score + '/100'}</span>
+          </div>
+          <div class="ats-cat-desc">${info.desc}</div>
+          <div style="height:5px;background:var(--border);border-radius:3px;">
+            <div style="height:100%;width:${cat.score}%;background:${cat.score >= 80 ? 'var(--green)' : cat.score >= 60 ? 'var(--blue)' : cat.score >= 40 ? '#e6a817' : 'var(--red)'};border-radius:3px;transition:width .5s ease;"></div>
           </div>
         </div>`;
       }
@@ -1658,7 +1658,10 @@ function renderCV(cv, name, targetJob, contact) {
     cv.suggestions.forEach(function(s) {
       sugHtml += `<div class="suggestion-item">
         <span class="suggestion-icon">${s.icon || '💡'}</span>
-        <div><strong>${s.title}</strong><br><span style="color:var(--muted)">${s.text}</span></div>
+        <div>
+          <p class="suggestion-title">${s.title}</p>
+          <p class="suggestion-text">${s.text}</p>
+        </div>
       </div>`;
     });
     document.getElementById('suggestionsContent').innerHTML = sugHtml;

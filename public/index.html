@@ -6,7 +6,7 @@
 <title>ResumeCV AI Pro — CV optimisé ATS en 2 minutes</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
   --blue: #2563EB;
@@ -1147,63 +1147,121 @@ function handleDownloadClick(format) {
 function downloadCVPdf() {
   showToast('⏳ Génération du PDF…');
 
-  // Récupérer le HTML brut et remplacer TOUTES les CSS variables par des couleurs hex
-  var cvHtml = document.getElementById('cvPreview').innerHTML;
-  cvHtml = cvHtml
-    .split('var(--ink-muted)').join('#475569')
-    .split('var(--ink-faint)').join('#94A3B8')
-    .split('var(--ink)').join('#0F172A')
-    .split('var(--blue-light)').join('#EFF6FF')
-    .split('var(--blue-dark)').join('#1D4ED8')
-    .split('var(--blue)').join('#2563EB')
-    .split('var(--border)').join('#E2E8F0')
-    .split('var(--green)').join('#16A34A')
-    .split('var(--orange)').join('#EA580C')
-    .split('var(--red)').join('#DC2626');
+  // ── Approche 100% jsPDF (zéro html2canvas) ──
+  // Extraire le contenu du CV depuis le DOM
+  var preview = document.getElementById('cvPreview');
+  var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+  var pageW = 210, pageH = 297;
+  var mL = 15, mR = 15, mTop = 18, mBot = 15;
+  var usable = pageW - mL - mR;
+  var y = mTop;
 
-  // Construire un document HTML complet autonome (polices système, zéro CSS variable)
-  var fullHtml = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.6;color:#0F172A;background:#ffffff;padding:10px;width:700px;">' +
-    '<style>' +
-    'h2{font-size:16pt!important;font-weight:800!important;letter-spacing:-0.02em;border-bottom:2px solid #2563EB!important;padding-bottom:6px!important;margin-bottom:12px!important;color:#0F172A!important;}' +
-    'h3{font-size:11pt!important;font-weight:700!important;color:#2563EB!important;margin:14px 0 4px!important;}' +
-    'p{color:#475569!important;margin-bottom:6px!important;font-size:10pt!important;}' +
-    '.cv-contact{display:flex;gap:12px;font-size:9pt!important;color:#94A3B8!important;flex-wrap:wrap;margin-bottom:14px!important;}' +
-    '.cv-contact span{color:#94A3B8!important;font-size:9pt!important;}' +
-    '.cv-section{margin-bottom:16px!important;}' +
-    '.cv-section-title{font-size:8pt!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:0.1em!important;color:#94A3B8!important;margin-bottom:8px!important;padding-bottom:4px!important;border-bottom:1px solid #E2E8F0!important;}' +
-    '.job{margin-bottom:10px!important;}' +
-    '.job-title{font-weight:700!important;font-size:10pt!important;color:#0F172A!important;}' +
-    '.job-meta{font-size:9pt!important;color:#94A3B8!important;margin-bottom:4px!important;}' +
-    'ul{padding-left:16px!important;}' +
-    'li{font-size:9pt!important;color:#475569!important;margin-bottom:3px!important;}' +
-    'div,span{color:inherit;}' +
-    '</style>' +
-    cvHtml +
-    '</div>';
+  function checkPage(needed) {
+    if (y + needed > pageH - mBot) { pdf.addPage(); y = mTop; }
+  }
+  function hexToRgb(h) {
+    var r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+    return [r,g,b];
+  }
+  function setColor(hex) { var c = hexToRgb(hex); pdf.setTextColor(c[0],c[1],c[2]); }
+  function drawLine(x1,yy,x2,color,w) {
+    var c = hexToRgb(color); pdf.setDrawColor(c[0],c[1],c[2]); pdf.setLineWidth(w||0.4); pdf.line(x1,yy,x2,yy);
+  }
+  function writeText(text, x, fontSize, fontStyle, color, maxW) {
+    pdf.setFontSize(fontSize);
+    pdf.setFont('helvetica', fontStyle || 'normal');
+    setColor(color || '#0F172A');
+    var lines = pdf.splitTextToSize(text, maxW || usable);
+    var lineH = fontSize * 0.45;
+    checkPage(lines.length * lineH);
+    pdf.text(lines, x, y);
+    y += lines.length * lineH;
+    return lines.length;
+  }
 
-  // Créer un élément temporaire VISIBLE (pas opacity:0, pas off-screen)
-  var temp = document.createElement('div');
-  temp.style.cssText = 'position:absolute;left:0;top:0;width:700px;background:#ffffff;z-index:99999;';
-  temp.innerHTML = fullHtml;
-  document.body.appendChild(temp);
-  var target = temp.firstElementChild;
+  // 1) NOM (h2)
+  var h2 = preview.querySelector('h2');
+  if (h2) {
+    writeText(h2.textContent.trim(), mL, 18, 'bold', '#0F172A');
+    y += 1;
+    drawLine(mL, y, mL + usable, '#2563EB', 0.6);
+    y += 5;
+  }
 
-  var opt = {
-    margin:       [10, 10, 10, 10],
-    filename:     'CV-optimise-ATS.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', allowTaint: true,
-                    windowWidth: 700 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(target).save().then(function() {
-    document.body.removeChild(temp);
-    showToast('✅ CV téléchargé en PDF !');
-  }).catch(function(err) {
-    console.error('PDF error:', err);
-    try { document.body.removeChild(temp); } catch(e){}
-    showToast('❌ Erreur lors de la génération du PDF');
-  });
+  // 2) Poste visé (premier <p> direct avec color blue)
+  var firstP = preview.querySelector('h2 + p');
+  if (firstP) {
+    writeText(firstP.textContent.trim(), mL, 11, 'bold', '#2563EB');
+    y += 2;
+  }
+
+  // 3) Contact
+  var contact = preview.querySelector('.cv-contact');
+  if (contact) {
+    writeText(contact.textContent.trim().replace(/\s+/g,' '), mL, 8, 'normal', '#94A3B8');
+    y += 4;
+  }
+
+  // 4) Sections du CV
+  var sections = preview.querySelectorAll('.cv-section');
+  for (var s = 0; s < sections.length; s++) {
+    var sec = sections[s];
+    checkPage(15);
+
+    // Titre de section
+    var title = sec.querySelector('.cv-section-title');
+    if (title) {
+      y += 3;
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      setColor('#94A3B8');
+      pdf.text(title.textContent.trim().toUpperCase(), mL, y);
+      y += 2;
+      drawLine(mL, y, mL + usable, '#E2E8F0', 0.3);
+      y += 4;
+    }
+
+    // Jobs (expériences)
+    var jobs = sec.querySelectorAll('.job');
+    if (jobs.length > 0) {
+      for (var j = 0; j < jobs.length; j++) {
+        checkPage(12);
+        var job = jobs[j];
+        var jt = job.querySelector('.job-title');
+        if (jt) { writeText(jt.textContent.trim(), mL, 10, 'bold', '#0F172A'); y += 1; }
+        var jm = job.querySelector('.job-meta');
+        if (jm) { writeText(jm.textContent.trim(), mL, 8, 'normal', '#94A3B8'); y += 1; }
+        var bullets = job.querySelectorAll('li');
+        for (var b = 0; b < bullets.length; b++) {
+          checkPage(5);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'normal');
+          setColor('#475569');
+          var bText = bullets[b].textContent.trim();
+          var bLines = pdf.splitTextToSize(bText, usable - 6);
+          var bLineH = 9 * 0.45;
+          checkPage(bLines.length * bLineH);
+          pdf.text('•', mL, y);
+          pdf.text(bLines, mL + 5, y);
+          y += bLines.length * bLineH + 1;
+        }
+        y += 2;
+      }
+    } else {
+      // Paragraphe simple (profil, formation, compétences)
+      var paras = sec.querySelectorAll('p:not(.cv-section-title)');
+      for (var p = 0; p < paras.length; p++) {
+        var pText = paras[p].textContent.trim();
+        if (pText) {
+          writeText(pText, mL, 9, 'normal', '#475569');
+          y += 2;
+        }
+      }
+    }
+  }
+
+  pdf.save('CV-optimise-ATS.pdf');
+  showToast('✅ CV téléchargé en PDF !');
 }
 
 function downloadCVDoc() {
@@ -1564,20 +1622,37 @@ function copyCoverLetter() {
 
 function downloadCoverLetterPdf() {
   if (!lastCoverLetter) return;
-  const el = document.getElementById('clPreview');
   showToast('⏳ Génération du PDF…');
-  const opt = {
-    margin:       [15, 15, 15, 15],
-    filename:     'Lettre-de-motivation.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(el).save().then(() => {
-    showToast('✅ Lettre téléchargée en PDF !');
-  }).catch(() => {
-    showToast('❌ Erreur lors de la génération du PDF');
-  });
+
+  var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+  var mL = 25, mR = 25, mTop = 30, mBot = 25;
+  var usable = 210 - mL - mR;
+  var y = mTop;
+  var lineH = 5.5;
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(11);
+  pdf.setTextColor(26, 26, 26);
+
+  var paragraphs = lastCoverLetter.split('\n');
+  for (var i = 0; i < paragraphs.length; i++) {
+    var line = paragraphs[i].trim();
+    if (line === '') {
+      y += lineH;
+      continue;
+    }
+    var wrapped = pdf.splitTextToSize(line, usable);
+    var blockH = wrapped.length * lineH;
+    if (y + blockH > 297 - mBot) {
+      pdf.addPage();
+      y = mTop;
+    }
+    pdf.text(wrapped, mL, y);
+    y += blockH + 1;
+  }
+
+  pdf.save('Lettre-de-motivation.pdf');
+  showToast('✅ Lettre téléchargée en PDF !');
 }
 
 function downloadCoverLetterDoc() {

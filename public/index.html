@@ -1200,11 +1200,15 @@ function updateNavUI(user) {
       : userPlan === 'unit'
       ? '<span class="plan-badge-user">CV débloqué ✓</span>'
       : '<span class="plan-badge-free">Gratuit</span>';
+    const manageBtn = userPlan === 'monthly'
+      ? '<button class="btn-ghost" onclick="openCustomerPortal()" style="font-size:.75rem;padding:5px 12px;">Gérer abonnement</button>'
+      : '';
     nav.innerHTML = `
       <div class="user-bar">
         <div class="user-avatar" title="${user.email}">${initials}</div>
         <span class="user-email">${user.email}</span>
         ${planLabel}
+        ${manageBtn}
         <button class="btn-logout" onclick="handleLogout()">Déconnexion</button>
       </div>`;
   }
@@ -1279,6 +1283,31 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── PORTAIL CLIENT STRIPE ──
+async function openCustomerPortal() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { showToast('⚠️ Connectez-vous d\'abord'); return; }
+    showToast('⏳ Redirection vers votre espace client…');
+    const resp = await fetch('/.netlify/functions/create-portal-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token
+      }
+    });
+    const result = await resp.json();
+    if (result.url) {
+      window.location.href = result.url;
+    } else {
+      showToast('❌ ' + (result.error || 'Erreur lors de l\'accès au portail'));
+    }
+  } catch(e) {
+    console.error('Erreur portail client:', e);
+    showToast('❌ Impossible d\'accéder au portail client');
+  }
 }
 
 // ── CONSOMMATION CRÉDIT UNITAIRE ──

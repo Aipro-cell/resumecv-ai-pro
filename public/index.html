@@ -1145,54 +1145,68 @@ function handleDownloadClick(format) {
 }
 
 function downloadCVPdf() {
-  const el = document.getElementById('cvPreview');
   showToast('⏳ Génération du PDF…');
+  const cvHtml = document.getElementById('cvPreview').innerHTML;
 
-  // Résoudre les CSS variables en couleurs explicites pour html2canvas
-  const colorMap = {
-    'var(--ink)': '#0F172A',
-    'var(--ink-muted)': '#475569',
-    'var(--ink-faint)': '#94A3B8',
-    'var(--blue)': '#2563EB',
-    'var(--border)': '#E2E8F0',
-    'var(--green)': '#16A34A',
-    'var(--orange)': '#EA580C',
-    'var(--red)': '#DC2626'
+  // Créer un conteneur temporaire avec styles explicites (zéro CSS variable)
+  // Même approche que downloadCVDoc() qui fonctionne parfaitement
+  const wrapper = document.createElement('div');
+  wrapper.id = 'pdfTempContainer';
+  wrapper.style.cssText = 'position:fixed;left:0;top:0;width:190mm;background:#ffffff;z-index:-9999;opacity:0;pointer-events:none;';
+  wrapper.innerHTML = `
+    <div id="pdfTempContent" style="font-family:Inter,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.6;color:#0F172A;background:#ffffff;padding:20px;">
+      <style>
+        #pdfTempContent * { box-sizing: border-box; }
+        #pdfTempContent h2 { font-size:15pt; font-weight:800; letter-spacing:-0.02em; border-bottom:2px solid #2563EB; padding-bottom:6px; margin-bottom:12px; color:#0F172A; }
+        #pdfTempContent h3 { font-size:11pt; font-weight:700; color:#2563EB; margin:14px 0 4px; }
+        #pdfTempContent p { color:#475569; margin-bottom:6px; font-size:10pt; }
+        #pdfTempContent .cv-contact { display:flex; gap:12px; font-size:9pt; color:#94A3B8; flex-wrap:wrap; margin-bottom:14px; }
+        #pdfTempContent .cv-contact span { color:#94A3B8; font-size:9pt; }
+        #pdfTempContent .cv-section { margin-bottom:16px; }
+        #pdfTempContent .cv-section-title { font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #E2E8F0; }
+        #pdfTempContent .job { margin-bottom:10px; }
+        #pdfTempContent .job-title { font-weight:700; font-size:10pt; color:#0F172A; }
+        #pdfTempContent .job-meta { font-size:9pt; color:#94A3B8; margin-bottom:4px; }
+        #pdfTempContent ul { padding-left:16px; }
+        #pdfTempContent li { font-size:9pt; color:#475569; margin-bottom:3px; }
+      </style>
+      ${cvHtml}
+    </div>
+  `;
+  document.body.appendChild(wrapper);
+
+  // Remplacer les couleurs CSS variables inline (ex: style="color:var(--blue)")
+  const tempContent = document.getElementById('pdfTempContent');
+  const allEls = tempContent.querySelectorAll('*');
+  const varMap = {
+    'var(--ink)':'#0F172A','var(--ink-muted)':'#475569','var(--ink-faint)':'#94A3B8',
+    'var(--blue)':'#2563EB','var(--border)':'#E2E8F0','var(--green)':'#16A34A',
+    'var(--orange)':'#EA580C','var(--red)':'#DC2626','var(--blue-light)':'#EFF6FF',
+    'var(--blue-dark)':'#1D4ED8'
   };
+  for (let i = 0; i < allEls.length; i++) {
+    const el = allEls[i];
+    if (el.style.cssText) {
+      let css = el.style.cssText;
+      for (const [v, hex] of Object.entries(varMap)) {
+        css = css.split(v).join(hex);
+      }
+      el.style.cssText = css;
+    }
+  }
 
   const opt = {
     margin:       [10, 10, 10, 10],
     filename:     'CV-optimise-ATS.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      onclone: function(clonedDoc) {
-        var clonedEl = clonedDoc.getElementById('cvPreview');
-        // Supprimer le blur si présent
-        var outputEl = clonedDoc.getElementById('outputContent');
-        if (outputEl) outputEl.classList.remove('cv-locked');
-        // Appliquer les couleurs explicites sur tous les éléments
-        clonedEl.style.color = '#0F172A';
-        clonedEl.style.backgroundColor = '#ffffff';
-        clonedEl.style.webkitUserSelect = 'text';
-        clonedEl.style.userSelect = 'text';
-        var allEls = clonedEl.querySelectorAll('*');
-        for (var i = 0; i < allEls.length; i++) {
-          var child = allEls[i];
-          var cs = window.getComputedStyle(child);
-          child.style.color = cs.color;
-          child.style.backgroundColor = cs.backgroundColor;
-          if (cs.borderBottomColor) child.style.borderBottomColor = cs.borderBottomColor;
-        }
-      }
-    },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(el).save().then(() => {
+  html2pdf().set(opt).from(tempContent).save().then(function() {
+    document.body.removeChild(wrapper);
     showToast('✅ CV téléchargé en PDF !');
-  }).catch(() => {
+  }).catch(function() {
+    if (document.getElementById('pdfTempContainer')) document.body.removeChild(wrapper);
     showToast('❌ Erreur lors de la génération du PDF');
   });
 }
